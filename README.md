@@ -121,6 +121,14 @@ is missing. Then `/play-store:capture`, `/play-store:enhance`, `/play-store:list
 `/play-store:aso` take one app module from raw ADB captures to an uploadable
 `fastlane/metadata/android/` folder and a scored ASO report.
 
+[`variants/portfolio/`](variants/portfolio/) closes the loop: `/portfolio:publish <app>`
+turns that listing and those images into a portfolio entry on a personal Astro site (one
+Markdown file per locale plus a cover, validated against the site's content-collection
+schema, committed in the site repo), `/portfolio:privacy <app>` writes the app's privacy
+policy page from what the code actually does (permissions, SDKs, accounts, local data)
+along with a Play Console Data Safety summary, and `/portfolio:sync` reports which apps
+have no entry yet or an entry older than its sources.
+
 ## Configuration
 
 Command files are plain markdown with YAML frontmatter (`description`, `allowed-tools`).

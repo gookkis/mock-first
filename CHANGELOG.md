@@ -4,6 +4,22 @@
 
 ### Added
 
+- `variants/portfolio/` — publish an app to a personal Astro site's portfolio.
+  - `/portfolio:publish <app>` — gathers title, description, technologies (from Gradle
+    deps), Play Store link, problem/solution (from the PRD), body, and cover (from
+    `/play-store:enhance`) and writes one Markdown entry per locale with matching
+    filenames plus the image, reading the schema from the site's `content.config.ts` at
+    run time. Drafts are shown before writing; the site is built; the commit stays local
+    unless `--push` (deploys) or `--pr` (review branch) is given.
+  - `/portfolio:privacy <app>` — builds a data inventory from the code (merged
+    permissions, third-party SDKs, accounts, local storage, network targets, backup
+    flags), asks for confirmation, then writes the app's privacy policy page in both
+    locales at `src/pages/apps/<slug>/privacy-policy.astro` following the site's existing
+    per-app page, plus a Play Console Data Safety summary in
+    `docs/store/<app>/data-safety.md`. Sections exist only for SDKs actually found.
+  - `/portfolio:sync` — read-only comparison of app modules vs site entries: missing,
+    stale, draft, locale file missing, broken image path.
+  - Site location and paths live in `~/.claude/portfolio.yml`.
 - `variants/play-store/` — a companion command set for Play Store assets on a multi-app
   Android project, one `docs/store/<app>/` folder per app module:
   - `/play-store:doctor` — read-only check that the JDK, Android SDK (ADB, emulator, AVDs),
