@@ -34,8 +34,15 @@
     commands and says which commands are ready or blocked. `--fix` offers the two
     project-local fixes (install Playwright, download Chromium) and nothing else.
   - `/play-store:capture <app>` — builds and installs the app, drives the emulator through
-    ADB from a `screens.yml` manifest (deep link / activity / tap-by-text steps), sets a
-    clean demo status bar, and saves raw captures it has looked at.
+    ADB from a `screens.yml` manifest, sets a clean demo status bar, and saves raw captures
+    it has looked at. Handles Compose as well as Views: a detection step reports whether
+    screens are reachable by declared deep link, by their own Activity, or only by walking
+    the UI, and the tap resolver is written for Compose's accessibility tree (text and
+    content description rather than `resource-id`, walking up to the clickable ancestor,
+    `--compressed` dumps, animations disabled so dumps don't fail on a busy tree,
+    `waitFor`/`scrollTo` steps for lazy lists, and a post-tap check that the screen
+    actually changed). `--from-previews` renders `@Preview` composables with no device,
+    when the project already has Compose preview screenshot testing configured.
   - `/play-store:enhance <app>` — HTML templates rendered by Playwright turn each capture
     into a 1080x1920 marketing image (device frame, brand gradient, localized headline)
     plus the 1024x500 feature graphic. The renderer and templates are written once to
