@@ -1,0 +1,13 @@
+{
+  "name": "mock-first",
+  "owner": {
+    "name": "Heri"
+  },
+  "plugins": [
+    {
+      "name": "mock-first",
+      "source": "./",
+      "description": "Agree on the screen before you write the code. PRD -> mockup -> tasks -> code workflow with impact-aware revisions."
+    }
+  ]
+}
