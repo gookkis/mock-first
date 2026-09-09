@@ -40,7 +40,7 @@ from the repo at run time rather than hardcoding them.
 |---|---|
 | `/portfolio:publish <app>` | Builds the full landing-page entry: base fields plus the `hero`, `screenshots`, `features`, `stats`, `highlights`, and `note` sections, sourced from `listing.md`, the PRD, Gradle deps, the raw captures, and the privacy data inventory. Converts screenshots to WebP and copies them with the app icon into the slug's image folder. Drafts both locales, shows them, writes on approval, validates against the schema, builds, commits. `--basic` writes base fields only, `--push` deploys, `--pr` opens a pull request, default leaves the commit local. |
 | `/portfolio:privacy <app>` | Scans the app and its modules for permissions, SDKs (AdMob, Firebase, billing, HTTP clients), accounts, local storage, and network targets; shows that data inventory for confirmation; then writes `src/pages/apps/<slug>/privacy-policy.astro` in both locales following the site's existing per-app privacy page, and a Data Safety summary for the Play Console in `docs/store/<app>/data-safety.md`. The URL to paste into Play Console is `<site_url>/apps/<slug>/privacy-policy`. |
-| `/portfolio:sync` | Read-only. Every app module vs every site entry: `missing`, `stale`, `basic`, `draft`, `ok`, which landing-page sections each entry sets, plus entries with a locale file missing, uneven sections between locales, or a broken image path. |
+| `/portfolio:sync` | Read-only. Every app module vs every site entry: `missing`, `stale`, `basic`, `draft`, `ok`, which landing-page sections each entry sets, whether the app has a privacy page and whether the entry links it, plus entries with a locale file missing, uneven sections between locales, a broken image path, or an icon that no longer matches the app's Play icon. Unreleased apps (no Play link yet) are matched by slug and reported as `draft`; template modules are skipped and said so. |
 
 ## Install
 ```bash
@@ -69,7 +69,7 @@ site_url: https://gookkis.com
 | `title` | `app_name` in `strings.xml` |
 | `description` | short description in `docs/store/<app>/listing.md`, rewritten as one sentence |
 | `technologies` | app module `build.gradle` + version catalog, mapped to tags (Android, Kotlin, Jetpack Compose, Room, ...) |
-| `link` | the app's landing page if it has one, else the Play Store URL |
+| `link` | the app's landing page if it has one, else the Play Store URL; omitted (with `draft: true`) while the app is unreleased, so the site never links a 404 |
 | `type` | `mobile` |
 | `problem`, `solution` | `docs/apps/<app>/PRD.md`; one question to the user if the PRD has no problem statement |
 | `hero.icon` | `ic_launcher-playstore.png` in the app module |
@@ -95,7 +95,8 @@ height-agnostic, so any aspect ratio works and nothing is cropped.
 
 - Only the entry Markdown files and the slug's own image folder are ever written in the
   site repo.
-- The site must have a clean working tree before the command starts.
+- Dirt in the site's working tree stops the command only when it touches the files the
+  command writes; anything else is left alone, staged around by path, and reported.
 - A push to `main` deploys to production, so pushing needs `--push` explicitly; `--pr`
   is the review path.
 - An existing entry is never overwritten without showing the diff first.

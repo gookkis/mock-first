@@ -67,6 +67,41 @@
 
 ### Changed
 
+- `variants/portfolio/`, after the first real run against an unreleased app:
+  - **Unreleased apps.** `/portfolio:publish` no longer writes a Play URL that would 404:
+    `link` and the store action are omitted and the entry is written as a draft. Existing
+    entries are found by slug and image folder as well as by `applicationId`, so a
+    draft written before the app has a link is updated, not duplicated. `/portfolio:sync`
+    matches the same way and reports such an entry as `draft` ("no link yet") rather than
+    `maybe`; template modules are skipped and listed.
+  - **Dirty site tree.** All three commands stop only when the dirt touches the files
+    they write. Anything else (another session's edits) is staged around by path and
+    named in the report, instead of blocking the run.
+  - **Play icon.** A vector-only adaptive icon has no `ic_launcher-playstore.png`;
+    `/portfolio:publish` now renders it with the project's `docs/store/_tools/icon.mjs`
+    when present, or asks for an Image Asset export, rather than falling back to a mipmap
+    that doesn't exist. `/portfolio:sync` hashes the entry's `icon.png` against the app's
+    Play icon so a launcher redesign shows up as a problem.
+  - **Privacy on re-run.** `/portfolio:privacy` skips the confirmation stop when the
+    inventory was confirmed earlier in the same session and nothing changed, and an empty
+    inventory diff rewrites nothing, so a `--link-entry` or `--push` follow-up doesn't
+    re-ask or bump `lastUpdated`. `--link-entry` copies the wording from entries that
+    already carry the line and skips entries whose `highlights.action` already points at
+    the page. The Android-side `data-safety.md` is committed in its own repo; `--push`
+    pushes both.
+  - **Privacy inventory.** Merged permissions are split into app-declared and
+    SDK-injected and the page lists them that way; a public third-party API called
+    directly (a rate feed) gets its own section and a Data Safety note instead of being
+    treated as a backend; Google UMP is recognised and the "change consent from Settings"
+    promise is made only when the privacy-options wiring exists; interfaces wired to
+    `NoOp` are recorded as "not in build"; `allowBackup=true` becomes a bullet on the
+    page; a support address that differs from the template page's contact is asked
+    about; every "you can do X in the app" claim is verified against a screen first. The
+    report names the app's own support-links object (e.g. `SupportLinks.privacyPolicyUrl`)
+    rather than a generic `strings.xml` suggestion.
+  - `/portfolio:sync` reports a `Privacy` column (no page / page unlinked / linked) and
+    compares commit timestamps, not dates, since an entry and its sources usually land on
+    the same day.
 - **Everything is now in English** — every command file (base and Android variant),
   `docs/CONCEPT.md`, `docs/BRANDING.md`, and the walkthrough. The command files are prompts
   the model reads, so a single language keeps their behavior consistent; each command still

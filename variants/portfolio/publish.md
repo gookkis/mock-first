@@ -77,8 +77,11 @@ If the file is missing, ask for the site path, detect the rest from the repo (th
 of the portfolio collection, the image path used by existing entries, the locale
 subfolders, `site:` in `astro.config.mjs`), show it, and write the file.
 
-Then in the site repo: `git status --short` must be clean (or only untracked files
-outside the portfolio folders); otherwise stop and say what's dirty. Note the branch.
+Then in the site repo: `git status --short`. Dirt that touches the files this command
+writes (the slug's entry files or image folder) is a stop: say what's dirty and let the
+user resolve it. Dirt anywhere else (another session's edits, an unrelated deletion, an
+untracked file) is left alone: stage this command's files by path, never `git add -A`,
+and name the leftover dirt in the report. Note the branch.
 
 ## Step 1 — Gather from the Android project
 
@@ -114,6 +117,10 @@ outside the portfolio folders); otherwise stop and say what's dirty. Note the br
 4. Links: the Play Store URL is
    `https://play.google.com/store/apps/details?id=<applicationId>`. If the PRD or README
    names a landing page for the app, that's a second action button, not a replacement.
+   An app that is not on Play yet (no `versionCode` bump past 1, the release checklist
+   still open, or the user says so) gets **no** store URL anywhere in the entry: a link
+   that 404s is worse than none. The entry is then written with `draft: true`, `link`
+   and the store action are omitted, and the report says both must be added at release.
 
 ## Step 2 — Slug and existing entry
 
@@ -122,9 +129,12 @@ name gives a clearer one (`Siap TBS LPDP` -> `tbs-lpdp`). Propose it and confirm
 first publish. It names both the Markdown files and the image folder.
 
 Existing entry: grep every `<collection>/*/*.md` for the `applicationId` (it appears in
-`link:` or in a `hero.actions` URL). If found, that file's name is the slug (ignore
+`link:` or in a `hero.actions` URL). An unreleased entry carries no URL, so also check
+for `<collection>/<default_locale>/<derived slug>.md` and the image folder
+`<images>/<derived slug>/`. If found either way, that file's name is the slug (ignore
 `--slug`), and this run is an **update**: keep `featured`, `draft`, and any section the
-sources haven't changed; show a diff before writing.
+sources haven't changed; show a diff before writing. Never create a second entry for an
+app that already has one under another name.
 
 ## Step 3 — Images
 
@@ -136,6 +146,14 @@ would double both.
 | Site file | Source | Format |
 |---|---|---|
 | `<images>/<slug>/icon.png` | `ic_launcher-playstore.png` in the app module (512x512), else the largest `mipmap-xxxhdpi/ic_launcher*.png` | PNG, kept square |
+
+A vector-only adaptive icon (minSdk 26 projects, android-factory among them) has neither
+file. Do not draw one by hand from the drawables inside this command. If the Android
+project has `docs/store/_tools/icon.mjs` (android-factory renders the Play PNG from the
+adaptive-icon drawables with it: `node icon.mjs <res dir> <out.png> <preview.png>`), run
+it and commit the PNG at `src/main/ic_launcher-playstore.png` in the app module so the
+next run finds it; otherwise stop and ask the user to export the Play Store icon from
+Android Studio's Image Asset wizard to that path.
 | `<images>/<slug>/<NN>-<id>.webp` | `docs/store/<app>/raw/<default_locale>/<NN>-<id>.png` | WebP, 540 px wide, height proportional |
 | card thumbnail (`image:`) | `docs/store/<app>/out/<default_locale>/featureGraphic.*`, else `--image` | as-is |
 
@@ -216,7 +234,9 @@ length, and how the sections are phrased. Then draft, per locale.
 - `technologies`: from Step 1.3.
 - `type: "mobile"`, `image`, `featured`, `draft`.
 - `link`: the app's landing page if it has one, else the Play Store URL. It is the
-  fallback CTA when `hero.actions` is absent, so always set it.
+  fallback CTA when `hero.actions` is absent, so set it whenever the URL is live. For an
+  unreleased app (Step 1.4) omit it; the schema allows that and the page renders without a
+  button.
 - `problem`: 2-3 sentences. Who has what problem, why existing options fall short.
 - `solution`: 2-3 sentences starting with what was built, the 3-4 capabilities that
   answer the problem, and the constraint that shaped it.
@@ -241,7 +261,7 @@ hero:
 `note` is three or four short claims joined by `·`, each one true per the data inventory
 (free, no ads, no account, works offline). Drop the ones that don't hold. Omit
 `actions` entirely if the app has only the store link; the bare `link` renders one button
-on its own.
+on its own. For an unreleased app omit `actions` too, unless a landing page exists.
 
 ### `screenshots`
 
@@ -298,9 +318,12 @@ to disclaim.
 1-3 short paragraphs after the frontmatter: detail that doesn't fit a section, how it's
 distributed, what's planned. No headings; the page provides them. If
 `src/pages/apps/<slug>/privacy-policy.astro` exists and `highlights.action` doesn't
-already point at it, end with the site's usual line:
+already point at it, end with the site's usual line, copied per locale from an entry
+that already has one (`grep -rl privacy-policy <collection>`); the current ones are
 `Kebijakan privasi aplikasi ini tersedia di [halaman terpisah](/apps/<slug>/privacy-policy).`
-and its English counterpart under `/en/apps/<slug>/privacy-policy`.
+and `The app's privacy policy lives on [its own page](/en/apps/<slug>/privacy-policy).`
+If the page doesn't exist yet, say in the report that `/portfolio:privacy <app>
+--link-entry` adds the line later.
 
 Show both files in full, plus the image list and the slug. Wait for a yes, or for edits.
 `--dry-run` stops here.
@@ -317,8 +340,9 @@ Show both files in full, plus the image list and the slug. Wait for a yes, or fo
    any error as a failure to fix before committing. If it's missing, say `npm ci` is
    needed for a real build, offer to run it, and if declined skip the build with a clear
    "not built" in the report.
-4. `git status --short` must show only the expected files: the locale Markdown files and
-   the slug's own image folder.
+4. `git status --short` must show the expected files: the locale Markdown files and the
+   slug's own image folder. Anything else present must be the dirt noted in Step 0, and
+   stays unstaged.
 
 ## Step 6 — Commit, then optionally push
 
