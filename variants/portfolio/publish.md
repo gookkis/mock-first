@@ -7,44 +7,52 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(date*), Bash(mkdir*), Bash(ls
 
 Reads one app module of the Android project plus whatever `/play-store` already produced,
 and writes the matching portfolio entry into the Astro site: one Markdown file per locale
-(same filename in `id/` and `en/`) and one cover image. Validates against the site's
-content schema, builds the site, commits. Pushing is opt-in because a push to `main`
-deploys straight to production.
+(same filename in `id/` and `en/`), an app icon, and a set of screenshots. Validates
+against the site's content schema, builds the site, commits. Pushing is opt-in because a
+push to `main` deploys straight to production.
+
+The site renders a portfolio entry as a landing page: hero (icon, title, tagline, action
+buttons, note line, tech chips, phone mockup) -> problem/solution -> screenshot scroller
+-> feature grid -> stat cards -> checklist highlights -> disclaimer box -> Markdown body.
+Every section past the hero is optional frontmatter and is skipped when absent, so a
+minimal entry still renders correctly.
 
 ## Arguments
-
-Read `$ARGUMENTS`:
 
 | Argument | Meaning |
 |---|---|
 | `<app>` | Required. Gradle path (`:tokoku`) or app name (`tokoku`). |
 | `--site <path>` | Site repo. Default: `site:` in `~/.claude/portfolio.yml`. |
-| `--slug <slug>` | Entry filename. Default: derived (see Step 2). |
-| `--image <path>` | Cover image to use instead of the auto-picked one. |
-| `--featured` / `--no-featured` | Set `featured:`. Default: keep the existing value, `false` for a new entry. |
-| `--draft` | Write with `draft: true` (entry stays invisible on the site). |
+| `--slug <slug>` | Entry filename and image folder. Default: derived (see Step 2). |
+| `--basic` | Write only the base fields (no hero/screenshots/features/stats/highlights/note). |
+| `--shots <n>` | How many screenshots to include. Default: all that passed capture, capped at 8. |
+| `--image <path>` | Card thumbnail, overriding the auto-picked one. |
+| `--featured` / `--no-featured` | Set `featured:`. Default: keep existing, `false` for a new entry. |
+| `--draft` | Write with `draft: true`. |
 | `--push` | After committing on `main`, push. **This deploys to production.** |
-| `--pr` | Commit on branch `portfolio/<slug>`, push that branch, open a PR with `gh`. Nothing reaches `main`. |
-| `--dry-run` | Show the two Markdown files and the image choice, write nothing. |
+| `--pr` | Commit on branch `portfolio/<slug>`, push it, open a PR with `gh`. |
+| `--dry-run` | Show everything that would be written, write nothing. |
 
 Without `--push` or `--pr`: files written, site built, changes committed on the current
-branch of the site repo, not pushed. The user pushes when ready.
+branch of the site repo, not pushed.
 
 ## Absolute rules
 
-- **Never touch site code.** Only `src/content/portfolio/<locale>/<slug>.md` and
-  `public/images/portfolio/<slug>.<ext>` are written. No `.astro`, no config, no other
-  entry.
+- **Never touch site code.** Only the entry Markdown files and images under the slug's
+  own folder are written. No `.astro`, no config, no other entry, no shared image.
 - **Read the schema from the site, don't assume it.** Parse the `portfolio` collection in
   `src/content.config.ts` (or `src/content/config.ts`) at run time and produce exactly its
-  fields. If the schema has a field this command doesn't know, leave it out and mention it.
-- **Same filename in every locale.** The site's language switcher maps `id/x.md` to
-  `en/x.md` by name. Never write one locale without the other.
+  fields. If it has a field this command doesn't map, name it in the report and ask
+  whether to fill it rather than silently skipping it.
+- **Same filename in every locale.** The language switcher maps `id/x.md` to `en/x.md` by
+  name. Never write one locale without the other.
 - **Two languages, two texts.** `en/` is written in English by you, not a literal
-  translation. Same facts, natural phrasing.
+  translation. Same facts, natural phrasing. Section headings too.
 - **No marketing copy.** The site is a personal portfolio in the first person's voice
   (read two existing entries first to match it). Store-listing text is a source of facts,
   not text to paste. No "best", no "#1", no exclamation marks.
+- **Never invent a number.** `stats` values come from the PRD, the code, or the user. If
+  a number can't be traced to one of those, leave the whole section out.
 - **Problem and solution are the entry.** If neither the PRD nor the user can say what
   problem the app solves, stop and ask; don't fill the fields with feature lists.
 - **Never overwrite an existing entry without showing the diff** and getting a yes.
@@ -58,21 +66,19 @@ branch of the site repo, not pushed. The user pushes when ready.
 ```yaml
 site: C:/Users/user/ClaudeProject/gookkis-web
 collection: src/content/portfolio      # locale subfolders inside
-images: public/images/portfolio        # written as /images/portfolio/<slug>.<ext> in frontmatter
+images: public/images/portfolio        # per-slug subfolder; URLs are /images/portfolio/<slug>/...
 locales: [id, en]
 default_locale: id
 branch: main
 site_url: https://gookkis.com
 ```
 
-If the file is missing, ask for the site path, detect the rest from the repo (the
-`base:` of the portfolio collection, the `public/images/...` path used by existing
-entries' `image:` fields, the locale subfolders, `site:` in `astro.config.mjs`), show it,
-and write the file.
+If the file is missing, ask for the site path, detect the rest from the repo (the `base:`
+of the portfolio collection, the image path used by existing entries, the locale
+subfolders, `site:` in `astro.config.mjs`), show it, and write the file.
 
 Then in the site repo: `git status --short` must be clean (or only untracked files
-outside the portfolio folders); otherwise stop and say what's dirty. Note the current
-branch.
+outside the portfolio folders); otherwise stop and say what's dirty. Note the branch.
 
 ## Step 1 — Gather from the Android project
 
@@ -80,14 +86,18 @@ branch.
    `applicationId`, `app_name` from `strings.xml`, `versionName`.
 2. Sources, in order of preference; read what exists:
    - `docs/store/<app>/listing.md` (from `/play-store:listing`): title, short and full
-     description per locale, keyword list.
+     description per locale, keyword list. The full description's feature blocks map
+     onto `features.items`.
    - `docs/apps/<app>/PRD.md` (android-factory): overview, problem statement, target
-     user, success criteria.
-   - `docs/store/<app>/screens.yml` and `captions.<locale>.yml`: the feature order and
-     benefit-first headlines.
+     user, success criteria, any concrete numbers.
+   - `docs/store/<app>/screens.yml` and `captions.<locale>.yml`: screen order, screen
+     labels, and the benefit headlines.
+   - `docs/store/<app>/data-safety.md` (from `/portfolio:privacy`): the confirmed data
+     inventory, which is exactly what `highlights` should say.
    - The app module's `README.md`, if any.
 3. Technologies from the build: read the app module's `build.gradle(.kts)` and the version
-   catalog (`gradle/libs.versions.toml`). Map, keep at most 6, `Android` always first:
+   catalog (`gradle/libs.versions.toml`). Map, keep at most 6, `Android` first unless the
+   app is also on another platform (then list the languages, as the Istiqomah entry does):
 
    | Dependency contains | Tag |
    |---|---|
@@ -99,103 +109,243 @@ branch.
    | `firebase` | Firebase |
    | `play-services-ads` / `admob` | AdMob |
    | `billing` | Play Billing |
-   | `sqldelight` / `realm` | SQLDelight / Realm |
    | `workmanager` / `work-runtime` | WorkManager |
 
-   Order: language, UI, data, then services. Drop anything the entry's text doesn't touch.
-4. Link: `https://play.google.com/store/apps/details?id=<applicationId>`. If the PRD or
-   README names a landing page for the app, prefer that and put the Play link in the body.
-5. Cover image, first hit wins:
-   - `--image <path>`
-   - `docs/store/<app>/out/<default_locale>/featureGraphic.*` (1024x500, landscape, same
-     shape as the site's existing 1568x744 covers)
-   - `docs/store/<app>/out/<default_locale>/01-*.jpg` (portrait; the site handles it, one
-     existing entry uses a 540x960 shot)
-   - none: write the entry without `image:` and say so.
-
-   Copy as `public/images/portfolio/<slug>.<ext>` keeping the original extension. Don't
-   re-encode; there's no image library in the site repo.
+4. Links: the Play Store URL is
+   `https://play.google.com/store/apps/details?id=<applicationId>`. If the PRD or README
+   names a landing page for the app, that's a second action button, not a replacement.
 
 ## Step 2 — Slug and existing entry
 
-Slug: `--slug`, else the last segment of `applicationId` in kebab-case
-(`com.gookkis.siaptbslpdp` -> `siaptbslpdp`), unless the app name gives a clearer one
-(`Siap TBS LPDP` -> `siap-tbs-lpdp`). Propose it and confirm on the first publish.
+Slug: `--slug`, else the last segment of `applicationId` in kebab-case, unless the app
+name gives a clearer one (`Siap TBS LPDP` -> `tbs-lpdp`). Propose it and confirm on the
+first publish. It names both the Markdown files and the image folder.
 
-Existing entry: grep every `<collection>/*/*.md` for `link:` containing the
-`applicationId`. If found, that file's name is the slug (ignore `--slug`), and this run is
-an **update**: keep `featured`, `draft`, and `image` unless a flag or a new image says
-otherwise; keep the body unless the sources changed since the entry's last git commit
-(`git log -1 --format=%cI -- <file>` vs the mtime of `listing.md` / `PRD.md`).
+Existing entry: grep every `<collection>/*/*.md` for the `applicationId` (it appears in
+`link:` or in a `hero.actions` URL). If found, that file's name is the slug (ignore
+`--slug`), and this run is an **update**: keep `featured`, `draft`, and any section the
+sources haven't changed; show a diff before writing.
 
-## Step 3 — Draft both locales
+## Step 3 — Images
+
+The site draws its own phone frame around each screenshot and renders its own captions
+underneath, so **screenshots come from `docs/store/<app>/raw/`, never from `out/`**. The
+`out/` images already carry a burned-in headline and a drawn device frame; using them
+would double both.
+
+| Site file | Source | Format |
+|---|---|---|
+| `<images>/<slug>/icon.png` | `ic_launcher-playstore.png` in the app module (512x512), else the largest `mipmap-xxxhdpi/ic_launcher*.png` | PNG, kept square |
+| `<images>/<slug>/<NN>-<id>.webp` | `docs/store/<app>/raw/<default_locale>/<NN>-<id>.png` | WebP, 540 px wide, height proportional |
+| card thumbnail (`image:`) | `docs/store/<app>/out/<default_locale>/featureGraphic.*`, else `--image` | as-is |
+
+Notes that matter:
+
+- The phone frame is `height: auto`, so **any aspect ratio works**. Don't crop. Existing
+  entries hold both 9:16 (540x960) and 9:20 (480x1067) shots. Downscale only.
+- Target under 40 KB per screenshot. At 540 px wide, WebP quality 80 lands there.
+- The card thumbnail is rendered `object-cover` in a 16:9 box on the index page. The
+  1024x500 feature graphic fits that almost exactly. A square icon used here gets its top
+  and bottom cropped, so prefer the feature graphic; if only an icon exists, say so in the
+  report and let the user decide.
+- Keep the raw capture order. `screenshots.items[0]` becomes the hero phone mockup and the
+  rest become the scroller, so the first screenshot must be the app's main screen.
+
+### Converting to WebP
+
+The site repo has no image library, so conversion runs in the Android project where
+Playwright already lives (installed by `/play-store:doctor --fix`). If
+`docs/store/_tools/webp.mjs` is missing, write it exactly:
+
+```js
+// Downscale images to a target width and re-encode as WebP, preserving aspect ratio.
+// usage: node webp.mjs <outDir> <width> <quality 0-100> <input...>
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const [outDir, widthArg, qualityArg, ...inputs] = process.argv.slice(2);
+if (!inputs.length) { console.error('usage: node webp.mjs <outDir> <width> <quality> <input...>'); process.exit(1); }
+const width = Number(widthArg), quality = Number(qualityArg) / 100;
+
+const dataUri = p => {
+  const ext = path.extname(p).slice(1).toLowerCase();
+  const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+  return `data:${mime};base64,${fs.readFileSync(p).toString('base64')}`;
+};
+
+const browser = await chromium.launch();
+const page = await browser.newPage();
+try {
+  fs.mkdirSync(outDir, { recursive: true });
+  for (const input of inputs) {
+    const out = path.join(outDir, path.basename(input).replace(/\.[^.]+$/, '.webp'));
+    const b64 = await page.evaluate(async ({ src, width, quality }) => {
+      const img = new Image();
+      img.src = src;
+      await img.decode();
+      const h = Math.round((img.naturalHeight / img.naturalWidth) * width);
+      const c = document.createElement('canvas');
+      c.width = width; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, width, h);
+      return c.toDataURL('image/webp', quality).split(',')[1];
+    }, { src: dataUri(input), width, quality });
+    fs.writeFileSync(out, Buffer.from(b64, 'base64'));
+    console.log(`${out} ${(fs.statSync(out).size / 1024).toFixed(0)}K @${width}px`);
+  }
+} finally {
+  await browser.close();
+}
+```
+
+Run it into a scratch folder, check the reported sizes, then copy the results into the
+site. If Playwright is unavailable and ImageMagick is, `magick <in> -resize 540x -quality
+80 <out>.webp` is the fallback; if neither exists, copy the PNGs unconverted, say so in
+the report, and note they are several times larger than the site's other images.
+
+## Step 4 — Draft both locales
 
 Read two existing entries in each locale first (the newest by git date) to match tone,
-length, and how `problem`/`solution` are phrased there.
+length, and how the sections are phrased. Then draft, per locale.
 
-Per locale:
+### Base fields (always)
 
-- `title`: the app name as users see it (no descriptor suffix from the store title).
+- `title`: the app name as users see it.
 - `description`: one sentence, 120-200 characters, what it is + for whom + the one
-  differentiator. Shown on cards.
+  differentiator. Shown on the index card.
 - `technologies`: from Step 1.3.
-- `link`, `type: "mobile"`, `image`, `featured`, `draft`.
-- `problem`: 2-3 sentences. Who has what problem, why existing options fall short. From
-  the PRD's problem statement; if the PRD has none, ask the user one question:
-  "Masalah apa yang app ini selesaikan, dan kenapa solusi yang ada tidak cukup?"
-- `solution`: 2-3 sentences starting with what was built ("Membangun aplikasi Android
-  ..." / "Built an Android app ..."), the 3-4 capabilities that answer the problem,
-  and the constraint that shaped it (offline, no account, local data, ...).
-- Body: 1-3 short paragraphs. What's inside in more detail, how it's distributed
-  (Play Store, downloadable packs, ...), disclaimers (unofficial, not affiliated). No
-  headings; the page already has them.
-- If `src/pages/apps/<slug>/privacy-policy.astro` exists in the site, end the body with
-  the privacy link line the existing entries use:
-  `Kebijakan privasi aplikasi ini tersedia di [halaman terpisah](/apps/<slug>/privacy-policy).`
-  and its English counterpart under `/en/apps/<slug>/privacy-policy`. If it doesn't
-  exist yet, mention `/portfolio:privacy <app>` in the report.
+- `type: "mobile"`, `image`, `featured`, `draft`.
+- `link`: the app's landing page if it has one, else the Play Store URL. It is the
+  fallback CTA when `hero.actions` is absent, so always set it.
+- `problem`: 2-3 sentences. Who has what problem, why existing options fall short.
+- `solution`: 2-3 sentences starting with what was built, the 3-4 capabilities that
+  answer the problem, and the constraint that shaped it.
 
-Show both files in full, plus the image choice and the slug. Wait for a yes, or for
-edits. `--dry-run` stops here.
+`--basic` stops here. Everything below is optional and omitted entirely when its source
+is missing; never emit an empty section.
 
-## Step 4 — Write and validate
+### `hero`
 
-1. Write `<collection>/<locale>/<slug>.md` for every locale, and copy the image.
-2. Schema check without a build: for each file, parse the frontmatter and compare with the
-   Zod fields read in Step 0: required fields present, `type` in the enum, `link` a URL,
-   `technologies` an array, no unknown keys. Report per file.
+```yaml
+hero:
+  icon: "/images/portfolio/<slug>/icon.png"
+  note: "Gratis · Tanpa akun · Bisa dipakai offline"
+  actions:
+    - label: "Unduh di Google Play"
+      url: "https://play.google.com/store/apps/details?id=<applicationId>"
+    - label: "Kunjungi situs aplikasi"
+      url: "<landing page>"
+      variant: "secondary"
+```
+
+`note` is three or four short claims joined by `·`, each one true per the data inventory
+(free, no ads, no account, works offline). Drop the ones that don't hold. Omit
+`actions` entirely if the app has only the store link; the bare `link` renders one button
+on its own.
+
+### `screenshots`
+
+`title` and `subtitle` are written in the entry's own voice; when omitted the site falls
+back to a generic heading. Per item: `src` is the site path, `alt` describes the screen
+for someone who can't see it, `title` is the screen label from `screens.yml`, `caption`
+is one short sentence from `captions.<locale>.yml`.
+
+```yaml
+screenshots:
+  title: "Lihat tampilan aplikasinya"
+  subtitle: "<one line on what the screens show>"
+  items:
+    - src: "/images/portfolio/<slug>/01-beranda.webp"
+      alt: "Tampilan beranda checklist harian <app>"
+      title: "Beranda"
+      caption: "Checklist hari ini, sekali ketuk."
+```
+
+`alt` and `caption` must differ: `alt` names what is on screen, `caption` says why it
+matters. Cap at 8 items (`--shots`).
+
+### `features`
+
+From the feature blocks of the full description, in the same order as the screenshots so
+text and images tell one story. Each item gets one emoji `icon`, a 2-4 word `title`, and
+one sentence `description`. Between 4 and 6 items; fewer than 3 isn't worth a grid.
+
+### `stats`
+
+Only when the PRD or the code gives real numbers (question counts, durations, surah
+counts, supported cities). `value` carries the number, `unit` the qualifier, `accent`
+cycles through `primary`, `violet`, `teal`, `amber`. If the numbers are estimates, say so
+in `subtitle`. **No source, no section.**
+
+### `highlights`
+
+The privacy and constraints checklist. When `docs/store/<app>/data-safety.md` exists, take
+the facts from there so the entry and the privacy page can't contradict each other; other-
+wise derive them the same way `/portfolio:privacy` Step 2 does and say in the report that
+they're unverified. Each item is a short claim as `title` plus one clause of detail as
+`description`. `action` links to the app's privacy policy page:
+`<site_url>/apps/<slug>/privacy-policy` when `/portfolio:privacy` has created it.
+
+### `note`
+
+Disclaimers only: not an official app, not affiliated, figures are estimates, results not
+guaranteed. `body` is a list of paragraphs, and it is rendered as HTML, so `<strong>` and
+`<a href>` are allowed and anything else should be avoided. Omit for an app with nothing
+to disclaim.
+
+### Body
+
+1-3 short paragraphs after the frontmatter: detail that doesn't fit a section, how it's
+distributed, what's planned. No headings; the page provides them. If
+`src/pages/apps/<slug>/privacy-policy.astro` exists and `highlights.action` doesn't
+already point at it, end with the site's usual line:
+`Kebijakan privasi aplikasi ini tersedia di [halaman terpisah](/apps/<slug>/privacy-policy).`
+and its English counterpart under `/en/apps/<slug>/privacy-policy`.
+
+Show both files in full, plus the image list and the slug. Wait for a yes, or for edits.
+`--dry-run` stops here.
+
+## Step 5 — Write and validate
+
+1. Write `<collection>/<locale>/<slug>.md` for every locale; copy the icon and the
+   converted screenshots into `<images>/<slug>/`.
+2. Schema check without a build: parse each file's frontmatter and compare with the Zod
+   fields read in Step 0. Required fields present, `type` in the enum, `link` a URL,
+   `technologies` an array, every `variant` and `accent` in its enum, every `src` and
+   `icon` path pointing at a file that now exists under `public/`. Report per file.
 3. Build check: if `node_modules/` exists in the site repo, run `npm run build` and treat
-   any error as a failure to fix before committing. If `node_modules/` is missing, say
-   `npm ci` is needed for a real build, offer to run it (it's local and reversible), and
-   if declined skip the build with a clear "not built" in the report.
-4. `git status --short` must show only the expected files: 2 Markdown files (or as many
-   as locales) and at most 1 image.
+   any error as a failure to fix before committing. If it's missing, say `npm ci` is
+   needed for a real build, offer to run it, and if declined skip the build with a clear
+   "not built" in the report.
+4. `git status --short` must show only the expected files: the locale Markdown files and
+   the slug's own image folder.
 
-## Step 5 — Commit, then optionally push
+## Step 6 — Commit, then optionally push
 
 Commit in the site repo, message in the repo's existing style:
 
 ```
 Add <Title> portfolio entry (ID+EN)
 ```
-or `Update <Title> portfolio entry (ID+EN)` for an update. Body: one line on the image
-source and one on where the text came from. Append the attribution lines the session
-provides.
+or `Update <Title> portfolio entry (ID+EN)`. Body: one line on where the images came
+from, one on where the text came from. Append the attribution lines the session provides.
 
-- default: commit on the current branch, no push. Print
-  `cd <site> && git push` as the next step and say it deploys.
+- default: commit on the current branch, no push. Print `cd <site> && git push` as the
+  next step and say it deploys.
 - `--push`: state "this deploys to <site_url>", then `git push`.
 - `--pr`: `git checkout -b portfolio/<slug>` before committing, `git push -u origin
   portfolio/<slug>`, `gh pr create --fill`, print the PR URL, `git checkout <branch>`.
 
-## Step 6 — Report
+## Step 7 — Report
 
-Table: locale, file, characters in `description`, validation result. Then the image
-path, the commit hash, and what was or wasn't pushed. Live URL once deployed:
-`<site_url>/portfolio/<slug>` and `<site_url>/en/portfolio/<slug>`.
+Table of locale, file, `description` length, sections written, validation result. Then the
+image list with file sizes, the commit hash, and what was or wasn't pushed. Live URLs:
+`<site_url>/portfolio/<slug>` and `<site_url>/en/portfolio/<slug>`. Finally, anything
+left open: sections skipped for lack of a source, a schema field with no mapping, or a
+card thumbnail that had to fall back to the icon.
 
 ## Re-runs
 
-Idempotent: the same app maps to the same entry (by `applicationId` in `link`). Re-run
-after `/play-store:listing` changes to refresh the text; the diff is shown before anything
-is overwritten.
+Idempotent: the same app maps to the same entry (by `applicationId`). Re-run after
+`/play-store:listing`, `/play-store:capture`, or `/portfolio:privacy` changes to refresh
+the affected sections; the diff is shown before anything is overwritten.

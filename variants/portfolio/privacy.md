@@ -200,6 +200,9 @@ guessing what the SDK collects.
      such string yet. Suggest, don't edit.
    - open questions from the inventory (unknown retention, no account-deletion path,
      SDK not recognised)
+   - if a portfolio entry already exists for this slug, note that re-running
+     `/portfolio:publish <app>` will refresh its `highlights` section from the confirmed
+     inventory in `data-safety.md` and point its action button at the new page
    - the one-line disclaimer: draft to be reviewed by the owner; not legal advice.
 
 ## Re-runs

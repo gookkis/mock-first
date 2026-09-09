@@ -34,8 +34,9 @@ projects live on the site too; they're listed so nothing is silently ignored).
    else file mtime).
 2. Site side: every `<collection>/<default_locale>/*.md` -> slug, `title`, `link`,
    `type`, `draft`, `featured`, `image`, last commit date
-   (`git -C <site> log -1 --format=%cs -- <file>`), and whether the same filename exists
-   in every other locale.
+   (`git -C <site> log -1 --format=%cs -- <file>`), whether the same filename exists
+   in every other locale, and which of the optional landing-page sections (`hero`,
+   `screenshots`, `features`, `stats`, `highlights`, `note`) the entry actually sets.
 
 ## Step 2 — Compare
 
@@ -46,12 +47,15 @@ For each app:
 | `missing` | No entry whose `link` contains the `applicationId`. |
 | `maybe` | No link match, but an entry title equals `app_name` (case-insensitive). Needs a human look. |
 | `stale` | Entry exists and its last commit is older than the newest Android source from Step 1.1. |
+| `basic` | Entry exists and is current, but sets no landing-page section, while the app has captures or a listing that could fill them. |
 | `draft` | Entry exists with `draft: true`. |
 | `ok` | Entry exists, is newer than its sources, all locales present. |
 
 Also flag, per entry: a locale file missing (`id/x.md` without `en/x.md` or vice
-versa), `image:` pointing at a file that doesn't exist under `public/`, and `link`
-returning to a package that no longer exists in `settings.gradle`.
+versa), a locale whose sections differ from the default locale's (one language richer
+than the other), any `image`, `hero.icon`, or `screenshots[].src` path that doesn't
+resolve to a file under `public/`, and `link` pointing at a package that no longer
+exists in `settings.gradle`.
 
 ## Step 3 — Report
 
@@ -59,16 +63,18 @@ returning to a package that no longer exists in `settings.gradle`.
 Portfolio sync — <date>
 Android project: <root>      Site: <site path> (<branch>, <last commit date>)
 
-App            applicationId              Entry            State    Note
-:tokoku        com.gookkis.tokoku         —                missing  /portfolio:publish tokoku
-:siaptbslpdp   com.gookkis.siaptbslpdp    tbs-lpdp         stale    listing.md 2026-09-07 > entry 2026-09-03
-:warungku      com.gookkis.warungku       warungku         ok
+App            applicationId              Entry            State    Sections            Note
+:tokoku        com.gookkis.tokoku         —                missing  —                   /portfolio:publish tokoku
+:siaptbslpdp   com.gookkis.siaptbslpdp    tbs-lpdp         stale    hero stats note     listing.md 2026-09-07 > entry 2026-09-03
+:warungku      com.gookkis.warungku       warungku         basic    —                   8 captures available, none used
+:kasirku       com.gookkis.kasirku        kasirku          ok       hero shots features
 
 Entries without an Android app (expected for non-Android work):
   dodolanan (web) · gookkis-cms (web) · istiqomah (mobile, iOS+Android — no link match: the link is a landing page)
 
 Problems:
   tpa-verbal: en/tpa-verbal.md missing
+  dodolanan: hero.icon /images/portfolio/dodolanan/icon.png not found
 ```
 
-End with the commands to run, one per `missing`/`stale` app.
+End with the commands to run, one per `missing`, `stale`, or `basic` app.

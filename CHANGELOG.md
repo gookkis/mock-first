@@ -5,12 +5,17 @@
 ### Added
 
 - `variants/portfolio/` — publish an app to a personal Astro site's portfolio.
-  - `/portfolio:publish <app>` — gathers title, description, technologies (from Gradle
-    deps), Play Store link, problem/solution (from the PRD), body, and cover (from
-    `/play-store:enhance`) and writes one Markdown entry per locale with matching
-    filenames plus the image, reading the schema from the site's `content.config.ts` at
-    run time. Drafts are shown before writing; the site is built; the commit stays local
-    unless `--push` (deploys) or `--pr` (review branch) is given.
+  - `/portfolio:publish <app>` — writes one Markdown entry per locale with matching
+    filenames, reading the schema from the site's `content.config.ts` at run time. Fills
+    the base fields (title, description, technologies from Gradle deps, link, problem and
+    solution from the PRD) and the landing-page sections the site renders: `hero` (icon,
+    action buttons, note line), `screenshots` (raw captures downscaled to WebP, labelled
+    from `screens.yml` and `captions.<locale>.yml`), `features`, `stats` (only from a real
+    source, never invented), `highlights` (from the privacy data inventory, so the entry
+    and the policy page agree), and `note` (disclaimers). Screenshots come from `raw/`
+    rather than the `out/` marketing images, because the site draws its own phone frame
+    and captions. `--basic` writes base fields only. Drafts are shown before writing; the
+    site is built; the commit stays local unless `--push` (deploys) or `--pr` is given.
   - `/portfolio:privacy <app>` — builds a data inventory from the code (merged
     permissions, third-party SDKs, accounts, local storage, network targets, backup
     flags), asks for confirmation, then writes the app's privacy policy page in both
@@ -18,7 +23,8 @@
     per-app page, plus a Play Console Data Safety summary in
     `docs/store/<app>/data-safety.md`. Sections exist only for SDKs actually found.
   - `/portfolio:sync` — read-only comparison of app modules vs site entries: missing,
-    stale, draft, locale file missing, broken image path.
+    stale, basic (no landing-page section while captures exist), draft, locale file
+    missing, sections uneven between locales, broken image path.
   - Site location and paths live in `~/.claude/portfolio.yml`.
 - `variants/play-store/` — a companion command set for Play Store assets on a multi-app
   Android project, one `docs/store/<app>/` folder per app module:
