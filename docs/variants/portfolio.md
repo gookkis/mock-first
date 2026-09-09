@@ -1,5 +1,11 @@
 # Portfolio — publish an app to the Astro site
 
+> **Kenapa berkas ini tidak ada di dalam `variants/<nama>/`?** Claude Code memperlakukan
+> **setiap** `.md` di folder command sebagai sebuah command — sebuah `README.md` di sana akan
+> muncul sebagai `/<nama>:README` di daftar skill. Dokumentasi varian karena itu hidup di
+> `docs/variants/`. Jangan dipindahkan kembali.
+
+
 Companion to the [Play Store variant](../play-store/). Once an app has a listing and
 marketing images, one command turns them into a portfolio entry on a personal Astro site:
 one Markdown file per locale plus a cover image, validated against the site's own

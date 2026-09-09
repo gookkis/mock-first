@@ -1,5 +1,11 @@
 # Play Store — screenshots, listing, and ASO for a multi-app Android project
 
+> **Kenapa berkas ini tidak ada di dalam `variants/<nama>/`?** Claude Code memperlakukan
+> **setiap** `.md` di folder command sebagai sebuah command — sebuah `README.md` di sana akan
+> muncul sebagai `/<nama>:README` di daftar skill. Dokumentasi varian karena itu hidup di
+> `docs/variants/`. Jangan dipindahkan kembali.
+
+
 Companion command set for the [Android apps factory variant](../android-factory/). It takes
 an app module from `settings.gradle` and produces everything the Play Console asks for:
 raw screenshots at the right sizes, "marketing" screenshots (device frame + background +

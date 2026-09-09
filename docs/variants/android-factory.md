@@ -1,5 +1,11 @@
 # Mock-First — Android Apps Factory variant
 
+> **Kenapa berkas ini tidak ada di dalam `variants/<nama>/`?** Claude Code memperlakukan
+> **setiap** `.md` di folder command sebagai sebuah command — sebuah `README.md` di sana akan
+> muncul sebagai `/<nama>:README` di daftar skill. Dokumentasi varian karena itu hidup di
+> `docs/variants/`. Jangan dipindahkan kembali.
+
+
 For a multi-module / multi-app Android project **that's already running** and already has a
 PRD.
 
