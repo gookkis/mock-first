@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" width="920" height="540" role="img" aria-label="Mock-First lifecycle: adopt, prd, mockup, break-task, coding, with revise handling every path back and review auditing drift">
+  <style>
+    .bg     { fill: #ffffff; }
+    .box    { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+    .boxdim { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .cmd    { fill: #4338ca; font: 600 19px ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; }
+    .cmddim { fill: #64748b; font: 600 17px ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; }
+    .out    { fill: #64748b; font: 400 12.5px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .note   { fill: #94a3b8; font: 400 12px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .cap    { fill: #64748b; font: 400 13px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .arrow  { stroke: #94a3b8; stroke-width: 1.6; fill: none; }
+    .loop   { stroke: #6366f1; stroke-width: 1.8; fill: none; }
+    .spur   { stroke: #6366f1; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; opacity: .75; }
+    .tick   { stroke: #cbd5e1; stroke-width: 1.4; fill: none; stroke-dasharray: 4 4; }
+    .head   { fill: #94a3b8; }
+    .headi  { fill: #6366f1; }
+    @media (prefers-color-scheme: dark) {
+      .bg     { fill: #0d1117; }
+      .box    { fill: #161b22; stroke: #30363d; }
+      .boxdim { fill: #0d1117; stroke: #30363d; }
+      .cmd    { fill: #a5b4fc; }
+      .cmddim { fill: #8b949e; }
+      .out    { fill: #8b949e; }
+      .note   { fill: #6e7681; }
+      .cap    { fill: #8b949e; }
+      .arrow  { stroke: #484f58; }
+      .loop   { stroke: #818cf8; }
+      .spur   { stroke: #818cf8; }
+      .tick   { stroke: #30363d; }
+      .head   { fill: #484f58; }
+      .headi  { fill: #818cf8; }
+    }
+  </style>
+
+  <rect class="bg" width="920" height="540"/>
+
+  <!-- optional entry point for a project that already exists -->
+  <rect class="boxdim" x="30" y="96" width="132" height="64" rx="10"/>
+  <text class="cmddim" x="96" y="124" text-anchor="middle">/adopt</text>
+  <text class="note"   x="96" y="145" text-anchor="middle">existing project, once</text>
+  <path class="tick" d="M 162 128 H 194"/>
+  <path class="head" d="M 194 128 l -7 -4.5 v 9 z"/>
+
+  <!-- forward flow -->
+  <rect class="box" x="200" y="96" width="146" height="64" rx="10"/>
+  <text class="cmd" x="273" y="124" text-anchor="middle">/prd</text>
+  <text class="out" x="273" y="145" text-anchor="middle">docs/PRD.md</text>
+
+  <path class="arrow" d="M 346 128 H 384"/>
+  <path class="head"  d="M 384 128 l -8 -5 v 10 z"/>
+
+  <rect class="box" x="390" y="96" width="146" height="64" rx="10"/>
+  <text class="cmd" x="463" y="124" text-anchor="middle">/mockup</text>
+  <text class="out" x="463" y="145" text-anchor="middle">screen-approved.html</text>
+  <text class="note" x="463" y="82" text-anchor="middle">&#8634; one screen at a time</text>
+
+  <path class="arrow" d="M 536 128 H 574"/>
+  <path class="head"  d="M 574 128 l -8 -5 v 10 z"/>
+
+  <rect class="box" x="580" y="96" width="146" height="64" rx="10"/>
+  <text class="cmd" x="653" y="124" text-anchor="middle">/break-task</text>
+  <text class="out" x="653" y="145" text-anchor="middle">docs/TASKS.md</text>
+
+  <path class="arrow" d="M 726 128 H 764"/>
+  <path class="head"  d="M 764 128 l -8 -5 v 10 z"/>
+
+  <rect class="box" x="770" y="96" width="120" height="64" rx="10"/>
+  <text class="cmd" x="830" y="124" text-anchor="middle">/coding</text>
+  <text class="out" x="830" y="145" text-anchor="middle">code + commits</text>
+  <text class="note" x="830" y="82" text-anchor="middle">&#8634; one task at a time</text>
+
+  <!-- the mockup gate -->
+  <path class="tick" d="M 558 90 V 172"/>
+  <text class="note" x="558" y="82" text-anchor="middle">gate</text>
+
+  <!-- every path back runs through /revise and returns to /prd -->
+  <path class="loop" d="M 830 160 V 320 H 631"/>
+  <path class="loop" d="M 481 320 H 273 V 172"/>
+  <path class="headi" d="M 273 166 l -5.5 10 h 11 z"/>
+  <path class="spur" d="M 463 160 V 320"/>
+  <path class="spur" d="M 653 160 V 320"/>
+
+  <rect class="box" x="481" y="290" width="150" height="60" rx="10"/>
+  <text class="cmd" x="556" y="316" text-anchor="middle">/revise</text>
+  <text class="out" x="556" y="336" text-anchor="middle">reports impact first</text>
+
+  <!-- read-only audit feeds the revise decision -->
+  <path class="tick" d="M 556 400 V 358"/>
+  <path class="head" d="M 556 352 l -4.5 9 h 9 z"/>
+  <rect class="boxdim" x="481" y="400" width="150" height="60" rx="10"/>
+  <text class="cmddim" x="556" y="426" text-anchor="middle">/review</text>
+  <text class="note"   x="556" y="446" text-anchor="middle">read-only audit</text>
+
+  <text class="cap" x="556" y="500" text-anchor="middle">Every path backward — a new requirement, changed UI, changed scope — goes through one command</text>
+  <text class="cap" x="556" y="520" text-anchor="middle">that reports what it will affect before a single file is touched.</text>
+</svg>

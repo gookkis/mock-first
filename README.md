@@ -1,3 +1,4 @@
+<p align="center"><img src="assets/logo.svg" width="88" alt=""></p>
 <h1 align="center">Mock-First</h1>
 <p align="center"><em>Agree on the screen before you write the code.</em></p>
 <p align="center">
@@ -6,6 +7,11 @@
 </p>
 
 > Not about test mocks — this is about UI mockups. See [FAQ](#faq).
+
+<p align="center">
+  <img src="assets/mockup-example.jpg" width="820" alt="An approved Mock-First mockup: an export-to-CSV dialog with column checkboxes, a date range, and an include-headers toggle, shown over the invoice list it exports">
+</p>
+<p align="center"><sub>What <code>/mockup</code> produces: one self-contained HTML file you open in a browser and approve — <a href="docs/examples/export-dialog-approved.html">see the source</a>.</sub></p>
 
 ---
 
@@ -18,12 +24,9 @@ already checked off no longer matches reality.
 
 ## How it works
 
-```
-/prd  ──▶  /mockup  ──▶  /break-task  ──▶  /coding
-                ↺ per screen              ↺ per task
-       └──────────────────┴──────────────────┘
-                        /revise
-```
+<p align="center">
+  <img src="assets/lifecycle.svg" width="880" alt="Four commands move forward — /prd, /mockup, /break-task, /coding — while /revise handles every path backward and /review audits drift">
+</p>
 
 Four commands move the work forward. One command (`/revise`) handles every path backward —
 new requirements, changed UI, changed scope — by reporting exactly what it will affect
@@ -71,6 +74,9 @@ Or as a project-local plugin, from this repo:
 5. Plans change? `/revise` — categorizes the change, reports impact (which tasks become
    outdated, which commits are affected) and waits for your decision before editing
    anything.
+
+The same walkthrough in full, with the actual output at each step:
+[docs/examples/walkthrough.md](docs/examples/walkthrough.md).
 
 ## What makes it different
 

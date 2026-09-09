@@ -1,0 +1,115 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Mockup — Export to CSV</title>
+<!--
+  Mock-First mockup — produced by /mockup export-dialog, approved by the user.
+  Self-contained: no external CSS, no JS, no build step.
+  Layout call: a modal over the list, so the user keeps the rows in view while
+  choosing columns — the PRD stressed "export what I'm looking at".
+-->
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b; background: #f1f5f9;
+  }
+  .app { padding: 20px 28px; max-width: 1000px; margin: 0 auto; filter: blur(0.6px); opacity: .55; }
+  .app h1 { font-size: 17px; margin: 0 0 4px; }
+  .app p  { margin: 0 0 18px; color: #64748b; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; background: #fff;
+          border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+       color: #64748b; background: #f8fafc; font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .paid { background: #dcfce7; color: #166534; }
+  .due  { background: #fef3c7; color: #92400e; }
+
+  .scrim { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: grid; place-items: center; }
+  .modal { width: 460px; background: #fff; border-radius: 12px;
+           box-shadow: 0 20px 50px rgba(15,23,42,.28); overflow: hidden; }
+  .modal header { padding: 18px 22px 4px; }
+  .modal h2 { margin: 0; font-size: 17px; }
+  .modal .sub { color: #64748b; font-size: 13px; margin: 4px 0 0; }
+  .body { padding: 16px 22px 4px; }
+  .label { font-size: 12px; font-weight: 600; text-transform: uppercase;
+           letter-spacing: .04em; color: #64748b; margin: 0 0 8px; }
+  .cols { border: 1px solid #e2e8f0; border-radius: 8px; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #f1f5f9; }
+  .row:last-child { border-bottom: 0; }
+  .row.all { background: #f8fafc; font-weight: 600; }
+  input[type=checkbox] { width: 16px; height: 16px; accent-color: #6366f1; margin: 0; }
+  .hint { color: #94a3b8; font-size: 12px; margin-left: auto; }
+  .range { display: flex; gap: 10px; margin-top: 16px; }
+  .range div { flex: 1; }
+  .range input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1;
+                 border-radius: 6px; font: inherit; color: #1e293b; background: #fff; }
+  .toggle { display: flex; align-items: center; gap: 10px; margin: 16px 0 4px; }
+  .sw { width: 36px; height: 20px; border-radius: 999px; background: #6366f1; position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px;
+               border-radius: 50%; background: #fff; }
+  footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px 20px; }
+  button { font: inherit; padding: 9px 18px; border-radius: 7px; border: 1px solid transparent; cursor: pointer; }
+  .ghost { background: #fff; border-color: #cbd5e1; color: #475569; }
+  .primary { background: #6366f1; color: #fff; font-weight: 600; }
+</style>
+
+<div class="app">
+  <h1>Invoices</h1>
+  <p>142 invoices &middot; March 2026</p>
+  <table>
+    <tr><th>Invoice</th><th>Client</th><th>Issued</th><th>Status</th><th class="num">Amount</th></tr>
+    <!-- rows are dynamic -->
+    <tr><td>INV-2026-0141</td><td>Kopi Tuku</td><td>2026-03-18</td><td><span class="pill paid">Paid</span></td><td class="num">4,250,000</td></tr>
+    <tr><td>INV-2026-0140</td><td>Warung Bu Ida</td><td>2026-03-17</td><td><span class="pill due">Due</span></td><td class="num">1,180,000</td></tr>
+    <tr><td>INV-2026-0139</td><td>Toko Sinar Jaya</td><td>2026-03-15</td><td><span class="pill paid">Paid</span></td><td class="num">7,900,000</td></tr>
+    <tr><td>INV-2026-0138</td><td>Bengkel Rahmat</td><td>2026-03-14</td><td><span class="pill due">Due</span></td><td class="num">2,340,000</td></tr>
+    <tr><td>INV-2026-0137</td><td>Apotek Melati</td><td>2026-03-12</td><td><span class="pill paid">Paid</span></td><td class="num">960,000</td></tr>
+  </table>
+</div>
+
+<div class="scrim">
+  <div class="modal">
+    <header>
+      <h2>Export to CSV</h2>
+      <p class="sub">142 rows match the current filter.</p>
+    </header>
+
+    <div class="body">
+      <p class="label">Columns</p>
+      <div class="cols">
+        <!-- "select all" was added in review round 2 -->
+        <label class="row all"><input type="checkbox" checked> Select all <span class="hint">5 of 5</span></label>
+        <label class="row"><input type="checkbox" checked> Invoice number</label>
+        <label class="row"><input type="checkbox" checked> Client</label>
+        <label class="row"><input type="checkbox" checked> Issue date</label>
+        <label class="row"><input type="checkbox" checked> Status</label>
+        <label class="row"><input type="checkbox" checked> Amount</label>
+      </div>
+
+      <div class="range">
+        <div>
+          <p class="label">From</p>
+          <input value="2026-03-01">
+        </div>
+        <div>
+          <p class="label">To</p>
+          <input value="2026-03-31">
+        </div>
+      </div>
+
+      <!-- toggle added by /revise — see walkthrough step 5 -->
+      <div class="toggle">
+        <span class="sw"></span>
+        <span>Include header row</span>
+      </div>
+    </div>
+
+    <footer>
+      <button class="ghost">Cancel</button>
+      <button class="primary">Export 142 rows</button>
+    </footer>
+  </div>
+</div>
