@@ -4,6 +4,26 @@
 
 ### Added
 
+- `variants/play-store/` — a companion command set for Play Store assets on a multi-app
+  Android project, one `docs/store/<app>/` folder per app module:
+  - `/play-store:doctor` — read-only check that the JDK, Android SDK (ADB, emulator, AVDs),
+    Node.js, and Playwright + Chromium are installed, that the project has a Gradle wrapper
+    and at least one app module, and which devices are connected. Prints per-OS install
+    commands and says which commands are ready or blocked. `--fix` offers the two
+    project-local fixes (install Playwright, download Chromium) and nothing else.
+  - `/play-store:capture <app>` — builds and installs the app, drives the emulator through
+    ADB from a `screens.yml` manifest (deep link / activity / tap-by-text steps), sets a
+    clean demo status bar, and saves raw captures it has looked at.
+  - `/play-store:enhance <app>` — HTML templates rendered by Playwright turn each capture
+    into a 1080x1920 marketing image (device frame, brand gradient, localized headline)
+    plus the 1024x500 feature graphic. The renderer and templates are written once to
+    `docs/store/_tools/` and are the user's to edit.
+  - `/play-store:listing <app>` — Q&A, then title / short / full description per locale in
+    the `fastlane/metadata/android/` layout with images copied alongside; budgets counted
+    by script; optional `--upload` via `fastlane supply`.
+  - `/play-store:aso <app>` — scores the listing (keywords, budgets, policy, localization,
+    screenshots), fetches competitor store pages for a side-by-side, and writes a dated
+    report with ranked rewrites. States plainly that search volume needs Play Console data.
 - `variants/android-factory/docs.md` — `/mock-first:docs`, per-module documentation
   generator. Every entry in `settings.gradle` (app, shared, and local modules alike) gets
   its own folder with `PRD.md`, `MODULE.md`, and `TASKS.md`. `MODULE.md` is filled from the

@@ -2,7 +2,7 @@
   "name": "mock-first",
   "version": "0.1.0",
   "description": "Visual-first spec workflow for Claude Code. PRD -> HTML mockup -> tasks -> code, with a /revise command that reports impact before anything changes.",
-  "author": "Heri",
+  "author": "Heri Kiswanto <heryoulie@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/gookkis/mock-first",
   "repository": "https://github.com/gookkis/mock-first",

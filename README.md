@@ -110,6 +110,17 @@ dependencies, and stale entries. The other commands keep it in sync on their own
 created during `/mock-first:coding` is registered and documented before the commit, and its
 `MODULE.md` is staged alongside the code that changed it.
 
+## Play Store companion (Android)
+
+[`variants/play-store/`](variants/play-store/) adds a second command set for the same
+multi-app project: capture screenshots at Play Store sizes, render them into marketing
+images with device frame, background, and caption, write the store listing per locale, and
+audit it for ASO. Start with `/play-store:doctor`, which checks that the JDK, Android SDK,
+emulator, Node.js, and Playwright are installed and prints install commands for whatever
+is missing. Then `/play-store:capture`, `/play-store:enhance`, `/play-store:listing`, and
+`/play-store:aso` take one app module from raw ADB captures to an uploadable
+`fastlane/metadata/android/` folder and a scored ASO report.
+
 ## Configuration
 
 Command files are plain markdown with YAML frontmatter (`description`, `allowed-tools`).
