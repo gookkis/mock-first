@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+
+- `author` in `.claude-plugin/plugin.json` was a string, which fails the plugin manifest
+  schema. `/plugin install mock-first@mock-first` — the install path the README documents —
+  stopped at `author: Invalid input`, so it had never worked. It is now an object.
+
 ### Added
 
 - `variants/portfolio/` — publish an app to a personal Astro site's portfolio.
