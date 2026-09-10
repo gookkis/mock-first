@@ -1,0 +1,12 @@
+{
+  "name": "portfolio",
+  "version": "0.1.0",
+  "description": "Turn a shipped app into a portfolio entry on an Astro site, write its privacy policy and Play Console Data Safety summary from what the code actually does, and report which entries are stale.",
+  "author": { "name": "Heri Kiswanto", "email": "heryoulie@gmail.com", "url": "https://github.com/gookkis" },
+  "license": "MIT",
+  "homepage": "https://github.com/gookkis/mock-first",
+  "repository": "https://github.com/gookkis/mock-first",
+  "keywords": ["portfolio", "astro", "privacy-policy", "play-store", "data-safety"],
+  "dependencies": ["play-store"],
+  "commands": "./"
+}

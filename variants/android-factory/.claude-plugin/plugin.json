@@ -1,0 +1,11 @@
+{
+  "name": "android-factory",
+  "version": "0.1.0",
+  "description": "Mock-First for an Android multi-module apps factory. Every command is scoped to app:<name>, core:<module> or module:<:gradle:path>, so a shared-module change is reported against every app that depends on it. Adds /android-factory:new-app and /android-factory:docs.",
+  "author": { "name": "Heri Kiswanto", "email": "heryoulie@gmail.com", "url": "https://github.com/gookkis" },
+  "license": "MIT",
+  "homepage": "https://github.com/gookkis/mock-first",
+  "repository": "https://github.com/gookkis/mock-first",
+  "keywords": ["android", "gradle", "multi-module", "prd", "mockup", "spec-driven-development"],
+  "commands": "./"
+}

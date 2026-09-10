@@ -44,19 +44,65 @@ you don't yet know what to change; use `/revise` once you do.
 
 ## Install
 
-Copy the command files into your global Claude Code commands folder:
+Add the marketplace once, then install the plugin you want:
+
+```bash
+/plugin marketplace add gookkis/mock-first
+/plugin install mock-first@mock-first
+```
+
+That gives you `/mock-first:prd`, `/mock-first:mockup`, `/mock-first:break-task`,
+`/mock-first:coding`, `/mock-first:revise`, `/mock-first:review` and `/mock-first:adopt`.
+
+### The Android variants
+
+The three variants ship as separate plugins from the same marketplace, and each one declares
+the one below it as a dependency — so you install the top of the stack you need and the rest
+comes with it:
+
+| Install | You get | Pulls in |
+| --- | --- | --- |
+| `android-factory@mock-first` | `/android-factory:*` — the core loop, module-scoped, plus `new-app` and `docs` | — |
+| `play-store@mock-first` | `/play-store:*` — screenshots, listing, ASO | `android-factory` |
+| `portfolio@mock-first` | `/portfolio:*` — site entry, privacy policy, staleness report | `play-store`, `android-factory` |
+
+```bash
+/plugin install portfolio@mock-first
+# ✔ installed portfolio (+ 2 dependencies: play-store, android-factory)
+```
+
+`android-factory` is a self-contained namespace, not a patch on `mock-first` — the two can be
+installed side by side without colliding. Use `mock-first` for a single-module project and
+`android-factory` for a multi-module apps factory; there is no reason to install both unless
+you work on both kinds of project.
+
+Dependencies that were pulled in automatically are tracked as such. If you later remove the
+plugin that needed them:
+
+```bash
+claude plugin prune          # lists what is now orphaned
+claude plugin prune -y       # removes it
+```
+
+To update everything from the marketplace:
+
+```bash
+/plugin marketplace update mock-first
+```
+
+### Without the plugin system
+
+You can also copy the command files into your global commands folder — they are plain
+Markdown with no plugin-specific syntax:
 
 ```bash
 mkdir -p ~/.claude/commands
 cp commands/*.md ~/.claude/commands/
 ```
 
-Or as a project-local plugin, from this repo:
-
-```bash
-/plugin marketplace add gookkis/mock-first
-/plugin install mock-first@mock-first
-```
+Copied this way they are invoked without a namespace: `/prd`, `/mockup`, and so on. Note that
+the variant command files reference each other by namespace, so they are worth installing as
+plugins rather than copying.
 
 ## 60-second walkthrough
 
@@ -96,24 +142,25 @@ more mature. Full comparison in [docs/COMPARISON.md](docs/COMPARISON.md).
 ## Android multi-module variant
 
 For an existing Android project organized as multiple Gradle modules and multiple apps (an
-"apps factory"), see [`variants/android-factory/`](variants/android-factory/). It adds
-`/mock-first:adopt` (one-time bootstrap that scans `settings.gradle`/`build.gradle` and
-builds a module → app dependency map at `docs/INDEX.md`) and `/mock-first:new-app`, and
+"apps factory"), install `android-factory@mock-first` — see
+[`variants/android-factory/`](variants/android-factory/). It adds
+`/android-factory:adopt` (one-time bootstrap that scans `settings.gradle`/`build.gradle` and
+builds a module → app dependency map at `docs/INDEX.md`) and `/android-factory:new-app`, and
 scopes every other command to `app:<name>`, `core:<module>`, or `module:<:gradle:path>` so a
 shared-module change can be reported against every app that depends on it.
 
 Every module gets its own documentation folder automatically — `PRD.md` (product scope),
 `MODULE.md` (responsibility, dependencies, public API surface, folder layout, build command),
-and `TASKS.md`. `/mock-first:docs` generates and refreshes them from the Gradle and source
+and `TASKS.md`. `/android-factory:docs` generates and refreshes them from the Gradle and source
 scan; `--check` runs a read-only audit for modules without docs, orphaned docs, changed
 dependencies, and stale entries. The other commands keep it in sync on their own: a module
-created during `/mock-first:coding` is registered and documented before the commit, and its
+created during `/android-factory:coding` is registered and documented before the commit, and its
 `MODULE.md` is staged alongside the code that changed it.
 
 ## Play Store companion (Android)
 
-[`variants/play-store/`](variants/play-store/) adds a second command set for the same
-multi-app project: capture screenshots at Play Store sizes, render them into marketing
+`play-store@mock-first` ([`variants/play-store/`](variants/play-store/)) adds a second
+command set for the same multi-app project: capture screenshots at Play Store sizes, render them into marketing
 images with device frame, background, and caption, write the store listing per locale, and
 audit it for ASO. Start with `/play-store:doctor`, which checks that the JDK, Android SDK,
 emulator, Node.js, and Playwright are installed and prints install commands for whatever
@@ -121,7 +168,7 @@ is missing. Then `/play-store:capture`, `/play-store:enhance`, `/play-store:list
 `/play-store:aso` take one app module from raw ADB captures to an uploadable
 `fastlane/metadata/android/` folder and a scored ASO report.
 
-[`variants/portfolio/`](variants/portfolio/) closes the loop: `/portfolio:publish <app>`
+`portfolio@mock-first` ([`variants/portfolio/`](variants/portfolio/)) closes the loop: `/portfolio:publish <app>`
 turns that listing and those images into a portfolio entry on a personal Astro site (one
 Markdown file per locale plus a cover, validated against the site's content-collection
 schema, committed in the site repo), `/portfolio:privacy <app>` writes the app's privacy
@@ -151,7 +198,7 @@ mockup and let you proceed anyway if you choose to.
 
 **What if I already have a PRD?** `/prd` won't overwrite an existing `docs/PRD.md` — it asks
 whether to add to it or archive it. For an Android apps-factory project that already has one
-PRD for the whole factory, run `/mock-first:adopt` instead.
+PRD for the whole factory, run `/android-factory:adopt` instead.
 
 ## License
 

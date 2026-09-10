@@ -63,12 +63,12 @@ Update this file whenever a module, an app, or a dependency changes.
 "Change risk": HIGH when used by 3+ apps, MEDIUM at 2, LOW at 1.
 
 The "Docs" column is required for **every** module — that column is what guarantees each
-module has its own documents. The folder slug rules live in `/mock-first:docs`.
+module has its own documents. The folder slug rules live in `/android-factory:docs`.
 
 ## Step 3 — Create documents for EVERY module
 
 Not just apps and shared modules — **every module in `settings.gradle` gets its own
-folder**, local ones included. Run the `/mock-first:docs --all` flow: the folder layout, the
+folder**, local ones included. Run the `/android-factory:docs --all` flow: the folder layout, the
 contents of `MODULE.md`, and the `PRD.md`/`TASKS.md` stubs are all defined there; don't
 restate them differently here.
 
@@ -90,7 +90,7 @@ docs/
 How the two documents divide the work:
 
 - `PRD.md` — **why & what**. The module's product scope, written through the
-  `/mock-first:prd` Q&A. At adopt time it's still an empty stub.
+  `/android-factory:prd` Q&A. At adopt time it's still an empty stub.
 - `MODULE.md` — **what's inside**. Responsibility, dependencies, public API surface, folder
   layout, build command. Filled automatically from the Gradle + source scan.
 
@@ -113,7 +113,7 @@ Code predating this date is not tracked as tasks.
 ```
 
 2. For each app, list the screens that **already exist** in its `PRD.md` marked `[existing]`
-   — so `/mock-first:break-task` doesn't treat them as new work. Take the list from the
+   — so `/android-factory:break-task` doesn't treat them as new work. Take the list from the
    existing Compose/Activity/Fragment files.
 
 ## Step 5 — Report
@@ -121,8 +121,8 @@ Code predating this date is not tracked as tasks.
 Show a summary: how many apps, how many shared modules, how many local modules, how many
 docs folders you created, and which module is riskiest to change. Then suggest what's next:
 
-- Adding a feature -> `/mock-first:prd app:<name>`
-- A new app -> `/mock-first:new-app`
-- Changing a shared module -> `/mock-first:revise`
-- Filling in or refreshing module docs again -> `/mock-first:docs` (`--check` just reports
+- Adding a feature -> `/android-factory:prd app:<name>`
+- A new app -> `/android-factory:new-app`
+- Changing a shared module -> `/android-factory:revise`
+- Filling in or refreshing module docs again -> `/android-factory:docs` (`--check` just reports
   which modules have incomplete docs)

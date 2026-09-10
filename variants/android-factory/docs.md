@@ -8,8 +8,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(date*), Bash(mkdir*), Bash(gi
 Guarantees that **every Gradle module has its own documentation folder**: `PRD.md` (why &
 what) + `MODULE.md` (what's inside) + `TASKS.md`.
 
-Called automatically by `/mock-first:adopt` (all modules at once), `/mock-first:new-app`,
-and `/mock-first:coding` (when a new module is born in Phase 0). Can also be run by hand.
+Called automatically by `/android-factory:adopt` (all modules at once), `/android-factory:new-app`,
+and `/android-factory:coding` (when a new module is born in Phase 0). Can also be run by hand.
 
 ## Arguments
 
@@ -30,7 +30,7 @@ Read `$ARGUMENTS`:
 - **Never overwrite human-written sections.** In `MODULE.md` only the blocks marked
   `<!-- auto -->` may be rewritten; the rest is edited only when it's empty.
 - **A `PRD.md` with content is never overwritten** — if one exists, skip it; its content
-  changes through `/mock-first:prd` or `/mock-first:revise`.
+  changes through `/android-factory:prd` or `/android-factory:revise`.
 - Don't invent anything. If the code doesn't tell you, write `_not filled in_` — never guess.
 
 ## Folder layout (used by every command)
@@ -121,7 +121,7 @@ are any._
 Shared modules: build the consuming apps too — <list of commands>.
 
 ## Constraints
-_Anything that must not change without `/mock-first:revise`. Written by a human._
+_Anything that must not change without `/android-factory:revise`. Written by a human._
 ````
 
 When refreshing a module that already has a `MODULE.md`: rewrite **only** the blocks marked
@@ -138,7 +138,7 @@ Parent: <path to the parent PRD from INDEX.md>  |  Scope prefix: <PREFIX>
 Technical docs: ./MODULE.md
 
 ## Scope of this module
-_(filled in via `/mock-first:prd module:<path>`)_
+_(filled in via `/android-factory:prd module:<path>`)_
 
 ## Screens Needed
 _(app/feature modules only; screens that ALREADY exist are marked `[existing]`)_
@@ -159,7 +159,7 @@ Compare the documents against reality and report every mismatch:
 | Docs folder exists but the module is gone from `settings.gradle` | `ORPHANED` — suggest archiving to `docs/archive/` |
 | `build.gradle` dependencies ≠ the "Depends on" table | `DEPENDENCIES CHANGED` |
 | A local module turns out to be used by 2+ apps | `NOW SHARED` — suggest moving the folder |
-| A public symbol is gone but consumers still reference it | `API REMOVED` — route to `/mock-first:revise` |
+| A public symbol is gone but consumers still reference it | `API REMOVED` — route to `/android-factory:revise` |
 | "Docs refreshed" is 30+ days older than the last commit touching the module (`git log -1 --format=%ad -- <path>`) | `STALE` |
 
 `--check` stops here: print the findings table and write nothing.
@@ -177,4 +177,4 @@ Then one line into `docs/progress-report.md`:
 `- [<date>] Module docs: <N> created, <N> refreshed, <N> findings`
 
 If a finding needs a decision (now shared, API removed, orphaned module), name the follow-up
-command — `/mock-first:revise` — and **don't decide it yourself**.
+command — `/android-factory:revise` — and **don't decide it yourself**.

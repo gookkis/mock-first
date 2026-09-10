@@ -1,13 +1,30 @@
 {
   "name": "mock-first",
+  "description": "Visual-first spec workflows for Claude Code: agree on the screen before you write the code. Ships the core PRD -> mockup -> tasks -> code loop plus three Android variants that build on each other.",
   "owner": {
-    "name": "Heri"
+    "name": "Heri Kiswanto",
+    "email": "heryoulie@gmail.com"
   },
   "plugins": [
     {
       "name": "mock-first",
       "source": "./",
-      "description": "Agree on the screen before you write the code. PRD -> mockup -> tasks -> code workflow with impact-aware revisions."
+      "description": "Agree on the screen before you write the code. PRD -> mockup -> tasks -> code workflow with impact-aware revisions. Start here for a single-module project."
+    },
+    {
+      "name": "android-factory",
+      "source": "./variants/android-factory",
+      "description": "Mock-First scoped to an Android multi-module apps factory, so a shared-module change is reported against every app that depends on it."
+    },
+    {
+      "name": "play-store",
+      "source": "./variants/play-store",
+      "description": "Play Store screenshots, per-locale listing copy and an ASO audit for one app module. Pulls in android-factory."
+    },
+    {
+      "name": "portfolio",
+      "source": "./variants/portfolio",
+      "description": "Publish a shipped app to an Astro portfolio site, generate its privacy policy and Data Safety summary, and report stale entries. Pulls in play-store."
     }
   ]
 }

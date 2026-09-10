@@ -40,9 +40,9 @@ component in an HTML comment, e.g. `<!-- LazyColumn -->`.
 
 ## Steps
 
-1. Read `docs/apps/<app>/PRD.md`. If it's missing, point the user to `/mock-first:prd
+1. Read `docs/apps/<app>/PRD.md`. If it's missing, point the user to `/android-factory:prd
    app:<name>` and stop. A screen marked `[existing]` is already in the code; a mockup for
-   it is a REVISION, not a new screen — route to `/mock-first:revise` first.
+   it is a REVISION, not a new screen — route to `/android-factory:revise` first.
    **If the requested screen already has an `-approved.html`**: check
    `docs/apps/<app>/TASKS.md` for a completed task that depends on it. If there is one, stop
    and route to `/revise` first, so the superseded task gets recorded. If no completed task

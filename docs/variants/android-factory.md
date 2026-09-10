@@ -23,22 +23,22 @@ PRD.
 mkdir -p ~/.claude/commands/mock-first
 cp *.md ~/.claude/commands/mock-first/
 ```
-The commands become `/mock-first:adopt`, `/mock-first:prd`, and so on.
+The commands become `/android-factory:adopt`, `/android-factory:prd`, and so on.
 
 ## First run
 ```bash
-/mock-first:adopt          # ONCE — scan Gradle, build INDEX.md + docs for every module
+/android-factory:adopt          # ONCE — scan Gradle, build INDEX.md + docs for every module
 ```
 After that, as needed:
 ```bash
-/mock-first:new-app                            # a new app following an existing app's pattern
-/mock-first:prd app:tokoku checkout feature    # a feature in one app
-/mock-first:prd core:ui                        # a shared-module change
-/mock-first:mockup app:tokoku checkout
-/mock-first:break-task app:tokoku
-/mock-first:coding app:tokoku
-/mock-first:docs --check                       # which modules have incomplete or stale docs
-/mock-first:revise change the button in core:ui   # any change from here on
+/android-factory:new-app                            # a new app following an existing app's pattern
+/android-factory:prd app:tokoku checkout feature    # a feature in one app
+/android-factory:prd core:ui                        # a shared-module change
+/android-factory:mockup app:tokoku checkout
+/android-factory:break-task app:tokoku
+/android-factory:coding app:tokoku
+/android-factory:docs --check                       # which modules have incomplete or stale docs
+/android-factory:revise change the button in core:ui   # any change from here on
 ```
 
 ## Document layout
@@ -63,7 +63,7 @@ The folder slug is the Gradle path without the leading `:`, with `:` replaced by
 ## Two documents per module
 | File | Contents | Written by |
 |---|---|---|
-| `PRD.md` | the module's product scope, screens, success criteria | the user, via `/mock-first:prd` |
+| `PRD.md` | the module's product scope, screens, success criteria | the user, via `/android-factory:prd` |
 | `MODULE.md` | responsibility, dependencies, public surface, folder layout, build command | generated from the Gradle + source scan |
 
 In `MODULE.md`, only the blocks marked `<!-- auto: ... -->` are ever machine-rewritten. The
@@ -94,17 +94,17 @@ One module, one `TASKS.md` — a task that changes another module belongs in tha
 ```
 
 ## What's specific to multi-app
-**Changing a shared module** triggers a per-app impact analysis in `/mock-first:revise`:
+**Changing a shared module** triggers a per-app impact analysis in `/android-factory:revise`:
 which tasks are superseded in which app, and three ways to handle it (change in place / add
 a new API / copy into a local module) with their trade-offs. The "Public surface" table in
 `MODULE.md` is the list of what can break.
 
-**Cross-module builds**: `/mock-first:coding` builds the affected module, then the apps that
+**Cross-module builds**: `/android-factory:coding` builds the affected module, then the apps that
 use it — a shared module can compile fine on its own while breaking its consumers.
 
 ## Maintenance
 `INDEX.md` and `MODULE.md` are kept current by the commands above. If you change a
-`build.gradle` or add a module by hand outside the pipeline, run `/mock-first:docs` to
+`build.gradle` or add a module by hand outside the pipeline, run `/android-factory:docs` to
 refresh (safe to repeat — only `<!-- auto -->` blocks are rewritten, and a `PRD.md` with
-content is never overwritten). `/mock-first:adopt` also stays safe to re-run to rebuild the
+content is never overwritten). `/android-factory:adopt` also stays safe to re-run to rebuild the
 map.
