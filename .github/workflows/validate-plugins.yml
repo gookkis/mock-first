@@ -1,0 +1,48 @@
+name: Validate plugin manifests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      # --strict fails on warnings too: unknown fields, missing metadata, and the
+      # wrong-typed `author` that once shipped and broke every install.
+      - name: Validate the marketplace and every plugin manifest
+        run: |
+          set -e
+          claude plugin validate . --strict
+          for manifest in variants/*/.claude-plugin/plugin.json; do
+            echo "--- $manifest"
+            claude plugin validate "$manifest" --strict
+          done
+
+      - name: Check every namespaced command reference resolves
+        run: |
+          set -e
+          fail=0
+          for ref in $(grep -rho '/[a-z-]\+:[a-z-]\+' commands variants README.md docs | sort -u); do
+            ns=${ref%%:*}; ns=${ns#/}; cmd=${ref##*:}
+            case "$ns" in
+              mock-first) dir=commands ;;
+              android-factory|play-store|portfolio) dir="variants/$ns" ;;
+              *) continue ;;
+            esac
+            if [ ! -f "$dir/$cmd.md" ]; then
+              echo "dangling reference: $ref (expected $dir/$cmd.md)"; fail=1
+            fi
+          done
+          exit $fail

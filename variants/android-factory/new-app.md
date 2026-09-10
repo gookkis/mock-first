@@ -30,11 +30,11 @@ for confirmation.
    module it uses. Update "Change risk" too — a module that was used by 2 apps is now used by
    3, so its risk goes up. Fill the "Docs" column for every new row.
 2. Create the docs folders for the app **and each of its local modules** through the
-   `/mock-first:docs app:<name>` flow — each gets `PRD.md`, `MODULE.md`, `TASKS.md` (the app
+   `/android-factory:docs app:<name>` flow — each gets `PRD.md`, `MODULE.md`, `TASKS.md` (the app
    folder also gets `mockups/`).
    Since the code doesn't exist yet, `MODULE.md` here holds the plan: "Responsibility" from
    the Step 1 answers, "Depends on" from the chosen shared modules, "Public surface" left as
-   `_not filled in_`. Refresh it later with `/mock-first:docs` once the Phase 0 code exists.
+   `_not filled in_`. Refresh it later with `/android-factory:docs` once the Phase 0 code exists.
 3. Record it in `docs/progress-report.md`:
    `- [<date>] New app: <name> (modeled on: <app>), shared modules: <list>, docs: <N> folders`
 
@@ -42,7 +42,7 @@ for confirmation.
 
 No code is written here. Point the user to:
 
-- `/mock-first:prd app:<name>` to define the scope
-- then `/mock-first:mockup`, `/mock-first:break-task`, `/mock-first:coding`
-- once the Gradle modules exist: `/mock-first:docs app:<name>` to fill in the public surface
+- `/android-factory:prd app:<name>` to define the scope
+- then `/android-factory:mockup`, `/android-factory:break-task`, `/android-factory:coding`
+- once the Gradle modules exist: `/android-factory:docs app:<name>` to fill in the public surface
   and layout in `MODULE.md`

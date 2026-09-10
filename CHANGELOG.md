@@ -10,6 +10,24 @@
 
 ### Added
 
+- The three variants ship as installable plugins from the same marketplace instead of
+  copy-by-hand command folders: `android-factory@mock-first`, `play-store@mock-first` and
+  `portfolio@mock-first`, each with its own `.claude-plugin/plugin.json`.
+- Each variant declares the one below it in `dependencies`, so `/plugin install
+  portfolio@mock-first` pulls in `play-store` and `android-factory` on its own, and
+  `claude plugin prune` removes them once nothing needs them.
+- `.github/workflows/validate-plugins.yml` runs `claude plugin validate --strict` over the
+  marketplace and every plugin manifest, and fails on any namespaced command reference that
+  points at a file that does not exist.
+
+### Changed
+
+- The android-factory commands moved out of the `mock-first` command namespace into their
+  own: `/mock-first:adopt` is now `/android-factory:adopt`, and so on for all 8. They had
+  been sharing a namespace with the base plugin, which meant the two could not be installed
+  together. They are now independent, and the cross-references from the play-store and
+  portfolio commands were updated to match.
+
 - `variants/portfolio/` — publish an app to a personal Astro site's portfolio.
   - `/portfolio:publish <app>` — writes one Markdown entry per locale with matching
     filenames, reading the schema from the site's `content.config.ts` at run time. Fills

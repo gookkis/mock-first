@@ -1,0 +1,12 @@
+{
+  "name": "play-store",
+  "version": "0.1.0",
+  "description": "Take one Android app module from raw ADB captures to an uploadable Play Store listing: capture at store sizes, frame and caption, write per-locale copy, audit for ASO.",
+  "author": { "name": "Heri Kiswanto", "email": "heryoulie@gmail.com", "url": "https://github.com/gookkis" },
+  "license": "MIT",
+  "homepage": "https://github.com/gookkis/mock-first",
+  "repository": "https://github.com/gookkis/mock-first",
+  "keywords": ["android", "play-store", "screenshots", "aso", "app-listing"],
+  "dependencies": ["android-factory"],
+  "commands": "./"
+}

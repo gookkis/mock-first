@@ -16,7 +16,7 @@ In a multi-app project, **cross-app impact is the main thing you have to report*
 
 ## Step 1 — Categorize
 From `$ARGUMENTS`, or ask if it's empty. Categories:
-- **A. New app** -> route to `/mock-first:new-app` and stop.
+- **A. New app** -> route to `/android-factory:new-app` and stop.
 - **B. New feature in one app** -> local impact.
 - **C. Change an existing feature**
 - **D. Change a shared/core module** -> **cross-app impact, needs the full analysis**
@@ -92,7 +92,7 @@ updated too.
 
 ### Docs folder structure (category H)
 - **New module** -> register it in `INDEX.md` and create its docs folder through the
-  `/mock-first:docs module:<path>` flow.
+  `/android-factory:docs module:<path>` flow.
 - **Local module becomes shared** -> move its folder from `docs/apps/<app>/modules/<slug>/`
   to `docs/core/<slug>/` (`git mv` if it's tracked), update the Docs column and "Change
   risk", and record the move. **Don't change the old task prefix** — already-completed tasks
@@ -102,7 +102,7 @@ updated too.
 
 ### Mockups
 Don't build them here. Finish the documents, then point the user to
-`/mock-first:mockup app:<name> <screen>`.
+`/android-factory:mockup app:<name> <screen>`.
 
 ## Step 4 — Record it
 ```

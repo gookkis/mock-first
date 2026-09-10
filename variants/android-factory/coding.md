@@ -26,7 +26,7 @@ The working folder is that scope's "Docs" column in `docs/INDEX.md`. Task file:
 ## Checks before starting
 
 1. Read `<docs folder>/TASKS.md`. If it doesn't exist, point the user to
-   `/mock-first:break-task` and stop.
+   `/android-factory:break-task` and stop.
 2. Run `git status`:
    - Uncommitted changes -> list them and ask: commit first, stash, or carry on? **Don't
      start before the user answers.**
@@ -54,7 +54,7 @@ The working folder is that scope's "Docs" column in `docs/INDEX.md`. Task file:
      tests, that's its own task via `/revise`.
    - **A new Gradle module?** The moment `settings.gradle` grows, register that module in
      `docs/INDEX.md` (type, owner, prefix, Docs column) and create its docs folder
-     (`PRD.md`, `MODULE.md`, `TASKS.md`) through the `/mock-first:docs module:<path>` flow —
+     (`PRD.md`, `MODULE.md`, `TASKS.md`) through the `/android-factory:docs module:<path>` flow —
      **in the same iteration, before the commit.** A module without documents must never be
      committed.
 4. Build **only the affected modules**, not the whole project (slow):

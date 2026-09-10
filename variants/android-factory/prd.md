@@ -11,11 +11,11 @@ Read `$ARGUMENTS`. Format: `app:<name>`, `core:<module>`, or `module:<:gradle:pa
 local modules). If empty, list the options from `docs/INDEX.md` and ask which scope.
 
 You write to the `PRD.md` inside that scope's docs folder (the "Docs" column in `INDEX.md`;
-the layout rules live in `/mock-first:docs`) — **not the parent PRD.** The parent PRD (path
+the layout rules live in `/android-factory:docs`) — **not the parent PRD.** The parent PRD (path
 in `INDEX.md`) is read for context only and never changed here. If the change affects the
-overall product direction, send the user to `/mock-first:revise`.
+overall product direction, send the user to `/android-factory:revise`.
 
-If that scope's docs folder doesn't exist yet, create it through the `/mock-first:docs
+If that scope's docs folder doesn't exist yet, create it through the `/android-factory:docs
 module:<path>` flow — never write a PRD into a folder that isn't listed in `INDEX.md`.
 
 Before asking anything, **read the `MODULE.md` in that folder** if it exists: the module's
@@ -71,7 +71,7 @@ don't pitch again.
      existing PRD, send the user to `/revise` (safer, and it reports impact first). `/prd` is
      only for a PRD written from scratch — first ask whether the old one should be archived
      to `docs/archive/PRD-<date>.md`.
-3. Structure of the scope's `PRD.md` (this replaces the empty stub from `/mock-first:docs`):
+3. Structure of the scope's `PRD.md` (this replaces the empty stub from `/android-factory:docs`):
 
 ```markdown
 # PRD — <Feature Name>
@@ -100,8 +100,8 @@ Feature code: <F01/F02/... — used for task numbering later>
    single line: `- [<date>] PRD <feature code> created: <feature name> — <N> features in scope`
 6. If the answer to question 6 surfaced a **new module** not yet in `INDEX.md`: register it
    there (type, owner, prefix, Docs column) and create its docs folder through the
-   `/mock-first:docs module:<path>` flow. No code yet — the Gradle module itself is born in
-   Phase 0 of `/mock-first:break-task` — but its documents stand up now, so no module ever
+   `/android-factory:docs module:<path>` flow. No code yet — the Gradle module itself is born in
+   Phase 0 of `/android-factory:break-task` — but its documents stand up now, so no module ever
    exists without a PRD.
-7. Suggest the next step: `/mock-first:mockup` (app scope) or `/mock-first:break-task`
+7. Suggest the next step: `/android-factory:mockup` (app scope) or `/android-factory:break-task`
    (core/module scope).

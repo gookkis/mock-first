@@ -17,7 +17,7 @@ The working folder is that scope's "Docs" column in `INDEX.md`. Documents used:
 - `<docs folder>/PRD.md` — the specific scope.
 - `<docs folder>/MODULE.md` — dependencies, public surface, folder layout, build command.
   This is where you learn where new files go and which verification command to use. If it's
-  missing, run the `/mock-first:docs` flow first.
+  missing, run the `/android-factory:docs` flow first.
 - `docs/apps/<app>/mockups/*-approved.html` (app scope only).
 
 ## Ground rules
@@ -91,7 +91,7 @@ module's `TASKS.md` under that module's prefix, not merged into this one. What s
 the integration task.
 
 The last Phase 7 task is always: `refresh MODULE.md for the affected modules
-(/mock-first:docs)` — the public surface and dependencies change once the code is written.
+(/android-factory:docs)` — the public surface and dependencies change once the code is written.
 
 ## After it's written
 
@@ -99,4 +99,4 @@ The last Phase 7 task is always: `refresh MODULE.md for the affected modules
 - Ask whether anything needs changing.
 - Update `docs/progress-report.md`:
   `- [<date>] Breakdown <scope>: <N> tasks (<PREFIX>-T## through T##), modules: <list>`
-- Suggest `/mock-first:coding <scope>`
+- Suggest `/android-factory:coding <scope>`
