@@ -176,6 +176,7 @@ the file that proves it:
 | Local storage, DataStore, Room, `EncryptedSharedPreferences` | code | Data safety (security practices) |
 | WebView loading remote content, user-to-user messaging, UGC | code | Content rating, target audience |
 | Foreground service types, exact alarms, all-files access, SMS/Call Log, `QUERY_ALL_PACKAGES`, broad photo/video access | manifest | Sensitive permission declarations |
+| Generative AI: image/text/voice generation, a model SDK, or a backend that returns generated media | code, network hosts, version catalog | AI-generated content policy (Step 7b), content rating |
 | `targetSdk`, `minSdk` | `build.gradle` | Release readiness |
 
 Show the inventory and ask the user to confirm it before Step 6. Anything you could not
@@ -223,6 +224,8 @@ Prepared <date> from <versionName> (<versionCode>). Draft; read and own it befor
                           `QUERY_ALL_PACKAGES`, foreground service types (each needs a
                           purpose string), plus the in-app disclosure they require.
 12. Advertising ID      — yes only if `AD_ID` is present; list the purposes it is used for
+13. AI-generated content — Step 7b. Only when the app generates content; the in-app
+                          reporting path is a release blocker, not a form field
 
 ## Release readiness
 - targetSdk vs the current Play requirement; signing; account type (a personal developer
@@ -268,10 +271,51 @@ submit them. Write into `console.md`:
   horror/fear, crude humour, user interaction (does the app let users communicate or share
   content?), does it share the user's location with other users, digital purchases,
   in-app ads, and the miscellaneous group.
+- When the app generates content with AI, answer yes wherever the questionnaire asks about
+  it, and keep the UGC answer honest: sharing through the system share sheet sends content
+  *out of* the app, which is not the same as users publishing to each other inside it.
 - Flag every answer that follows from Step 5 rather than from the user (ads SDK → "contains
   ads", billing client → "digital purchases", chat/UGC → "user interaction"), because these
   are the ones a wrong answer gets the app pulled for.
 - Note that changing an answer later re-issues the rating and can change the age bands.
+
+## Step 7b — AI-generated content
+
+Applies when Step 5 found generative AI: the app turns a prompt, photo, or voice into new
+content, whether the model runs on-device, in your own backend, or behind a third-party API.
+Play's AI-Generated Content policy covers text-to-text, text-to-image, image-to-image, and
+apps that generate voice or video of real people. It does **not** cover an app that merely
+displays AI content created elsewhere.
+
+The requirement that fails releases, quoted so it is not paraphrased away:
+
+> "Apps that generate content using AI must contain in-app user reporting or flagging
+> features that allow users to report or flag offensive content to developers without
+> needing to exit the app."
+
+Check the code for it. A reporting path exists only if all three hold, so record the file for
+each:
+
+1. It is reachable from wherever generated content is shown — the result screen, and any
+   gallery or history of past results.
+2. It works **without leaving the app** to find an address. Opening a mail composer already
+   filled in from a chooser inside the app is fine; a support email printed in Settings, a
+   link to a web form, or a Play Store review is not.
+3. It identifies the content being reported. A report with no id cannot be acted on, and
+   acting on reports is what Google actually measures.
+
+If any of the three fails, write it into `console.md` as a **blocker**, not a suggestion:
+this is a policy violation that gets a release rejected, and it is app code, not a form the
+user can fill in later.
+
+Also record in `console.md`:
+
+- Whether generated content passes a moderation check before the user sees it, and whether
+  that check is automated, human, or both.
+- Marketing claims: the store text must not promise content the safeguards are built to
+  refuse. Check the Step 3 text against it.
+- That the developer must actually read incoming reports after launch. Suggest a fixed
+  subject line for the report mail so it can be filtered.
 
 ## Step 8 — Report
 
