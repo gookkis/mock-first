@@ -101,7 +101,8 @@ Score each check 0-2 (0 = fails, 1 = partial, 2 = passes). Print the evidence ne
 ### S — Screenshots (only if `out/` exists)
 | # | Check |
 |---|---|
-| S1 | 4-8 phone screenshots (fewer than 4 disqualifies the listing from Play's promotion surfaces). |
+| S1 | 4-8 phone screenshots at 1080 px+ (2 is the publish minimum; fewer than 4 disqualifies the listing from Play's promotion surfaces). |
+| S1b | At least 4 large-screen (tablet/Chromebook) screenshots, 16:9 or 9:16 — their absence downranks the app on those devices. |
 | S2 | First screenshot shows the main value, not a login or splash screen. |
 | S3 | Every caption is ≤ 7 words and describes what's visible. |
 | S4 | Feature graphic present, no text smaller than 24 px in it (open the image and look). |

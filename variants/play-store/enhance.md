@@ -291,7 +291,9 @@ width: 1000px; font-size: 96px; text-align: left`.
    style, and the date.
 3. Report a table: screen id, headline, output file, status. Add the Play Console mapping:
    `out/<locale>/01-*.jpg ... 08-*.jpg` -> Phone screenshots, `featureGraphic` -> Feature
-   graphic. Remind: the store accepts JPEG or 24-bit PNG, 2 to 8 phone screenshots.
+   graphic. Remind: the store accepts JPEG or 24-bit PNG without alpha, 320-3840 px per side; 2 phone
+   screenshots is the publish minimum, 4 at 1080 px+ the threshold for Play's promotional
+   surfaces, and large-screen listings need at least 4 tablet shots (`--tablet`).
 4. Next step: `/play-store:listing <app>` writes the text and copies these images into the
    fastlane folder.
 
