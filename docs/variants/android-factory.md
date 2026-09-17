@@ -23,7 +23,11 @@ PRD.
 mkdir -p ~/.claude/commands/mock-first
 cp *.md ~/.claude/commands/mock-first/
 ```
-The commands become `/android-factory:adopt`, `/android-factory:prd`, and so on.
+The commands become `/android-factory:adopt`, `/android-factory:prd`, and so on. The plugin
+declares `mock-first` as a dependency and leans on it: `/mock-first:mockup` covers the factory
+too, because `platforms/android.md` reads `INDEX.md` and picks the right `mockups/` folder,
+and `/android-factory:break-task`, `:coding`, `:prd` and `:revise` are written as deltas on
+their base counterparts rather than as copies of them.
 
 ## First run
 ```bash
@@ -34,7 +38,7 @@ After that, as needed:
 /android-factory:new-app                            # a new app following an existing app's pattern
 /android-factory:prd app:tokoku checkout feature    # a feature in one app
 /android-factory:prd core:ui                        # a shared-module change
-/android-factory:mockup app:tokoku checkout
+/mock-first:mockup app:tokoku checkout
 /android-factory:break-task app:tokoku
 /android-factory:coding app:tokoku
 /android-factory:docs --check                       # which modules have incomplete or stale docs

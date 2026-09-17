@@ -5,8 +5,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(date*), Bash(mkdir*), Bash(cp
 
 # Revise — Multi-App
 
-Handles changes AFTER the documents exist or coding is underway.
-In a multi-app project, **cross-app impact is the main thing you have to report**.
+Handles changes AFTER the documents exist or coding is underway. It follows
+`/mock-first:revise` — categorize, report impact, stop, then apply — but in a multi-app
+project **cross-app impact is the main thing you have to report**, and that changes every
+step enough to spell out here.
 
 ## Absolute rules
 - Run `date +%Y-%m-%d` for the date.
@@ -102,7 +104,8 @@ updated too.
 
 ### Mockups
 Don't build them here. Finish the documents, then point the user to
-`/android-factory:mockup app:<name> <screen>`.
+`/mock-first:mockup app:<name> <screen>` — its Android profile reads `INDEX.md` and writes
+into that scope's `mockups/` folder.
 
 ## Step 4 — Record it
 ```

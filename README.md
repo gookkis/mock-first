@@ -62,19 +62,24 @@ comes with it:
 
 | Install | You get | Pulls in |
 | --- | --- | --- |
-| `android-factory@mock-first` | `/android-factory:*` — the core loop, module-scoped, plus `new-app` and `docs` | — |
-| `play-store@mock-first` | `/play-store:*` — screenshots, listing, ASO | `android-factory` |
-| `portfolio@mock-first` | `/portfolio:*` — site entry, privacy policy, staleness report | `play-store`, `android-factory` |
+| `android-factory@mock-first` | `/android-factory:*` — the module-scoped deltas, plus `new-app` and `docs` | `mock-first` |
+| `play-store@mock-first` | `/play-store:*` — screenshots, listing, ASO | `android-factory`, `mock-first` |
+| `portfolio@mock-first` | `/portfolio:*` — site entry, privacy policy, staleness report | `play-store`, `android-factory`, `mock-first` |
 
 ```bash
 /plugin install portfolio@mock-first
-# ✔ installed portfolio (+ 2 dependencies: play-store, android-factory)
+# ✔ installed portfolio (+ 3 dependencies: play-store, android-factory, mock-first)
 ```
 
-`android-factory` is a self-contained namespace, not a patch on `mock-first` — the two can be
-installed side by side without colliding. Use `mock-first` for a single-module project and
-`android-factory` for a multi-module apps factory; there is no reason to install both unless
-you work on both kinds of project.
+`android-factory` **extends** `mock-first` rather than replacing it. Its commands are written
+as deltas: `/android-factory:break-task` adds the dependency map, the scope prefixes and the
+one-module-one-task-file rule on top of `/mock-first:break-task`, and takes its phase order
+from `platforms/android.md` like everything else. The variant has no `mockup` command of its
+own at all — `/mock-first:mockup` reads `INDEX.md` through the Android profile and writes
+into the right `mockups/` folder by itself.
+
+So: install `mock-first` alone for a single-module project, and `android-factory` for a
+multi-module apps factory — it brings the base plugin with it.
 
 Dependencies that were pulled in automatically are tracked as such. If you later remove the
 plugin that needed them:
@@ -197,8 +202,11 @@ For an existing Android project organized as multiple Gradle modules and multipl
 [`variants/android-factory/`](variants/android-factory/). It adds
 `/android-factory:adopt` (one-time bootstrap that scans `settings.gradle`/`build.gradle` and
 builds a module → app dependency map at `docs/INDEX.md`) and `/android-factory:new-app`, and
-scopes every other command to `app:<name>`, `core:<module>`, or `module:<:gradle:path>` so a
-shared-module change can be reported against every app that depends on it.
+scopes the rest to `app:<name>`, `core:<module>`, or `module:<:gradle:path>` so a
+shared-module change can be reported against every app that depends on it. What the base
+commands and `platforms/android.md` already cover — the mockup, the phase order, the
+module-scoped build — is not duplicated here; each variant command is a delta on its base
+counterpart.
 
 Every module gets its own documentation folder automatically — `PRD.md` (product scope),
 `MODULE.md` (responsibility, dependencies, public API surface, folder layout, build command),
@@ -231,7 +239,7 @@ have no entry yet or an entry older than its sources.
 
 Command files are plain markdown with YAML frontmatter (`description`, `allowed-tools`).
 Edit them directly — under `commands/` for the base workflow, or
-`variants/android-factory/` for the Android set — to match your stack's build commands,
+`variants/android-factory/` for the factory deltas — to match your stack's build commands,
 commit message convention, or task phases. Anything that is true of one platform rather than
 of the workflow belongs in `platforms/<platform>.md` instead; adding a fifth platform
 (desktop, TV, watch) means writing one more profile there, with the same section headings,

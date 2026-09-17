@@ -43,6 +43,6 @@ for confirmation.
 No code is written here. Point the user to:
 
 - `/android-factory:prd app:<name>` to define the scope
-- then `/android-factory:mockup`, `/android-factory:break-task`, `/android-factory:coding`
+- then `/mock-first:mockup`, `/android-factory:break-task`, `/android-factory:coding`
 - once the Gradle modules exist: `/android-factory:docs app:<name>` to fill in the public surface
   and layout in `MODULE.md`

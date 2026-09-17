@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+### Removed
+
+- `/android-factory:mockup`. `platforms/android.md` already reads `docs/INDEX.md` and writes
+  into the scope's own `mockups/` folder, so the variant's copy added nothing but a second
+  place to keep the Material 3 and Compose guidance in sync. `/mock-first:mockup app:<name>
+  <screen>` covers the factory.
+
+### Changed
+
+- `android-factory` now declares `mock-first` as a dependency and **extends** it instead of
+  standing alone. Installing it pulls the base plugin in, and `play-store` and `portfolio`
+  inherit that through the chain. The README's claim that "there is no reason to install
+  both" is gone — that was true only while the variant carried its own copy of the loop.
+- `/android-factory:prd`, `:break-task` and `:coding` are rewritten as deltas on their base
+  counterparts rather than near-copies of them: each now states what a factory changes and
+  nothing else. Between them and the deleted mockup command that removes roughly 200 lines of
+  duplicated instructions — the Q&A discipline, the brainstorming limits, the commit
+  procedure, and an Android phase list that already lives in `platforms/android.md`.
+- What stays in the variant is what only a factory has: `INDEX.md` as the dependency map,
+  `MODULE.md` as the layout authority, scope prefixes on task numbers, the rule that one
+  module owns one `TASKS.md`, the cross-app impact check, and the discipline that a Gradle
+  module is never committed without its documents.
+- `android-factory` 0.1.0 -> 0.2.0.
+
 ## 0.2.0 — 2026-09-17
 
 ### Fixed
