@@ -1,6 +1,6 @@
 {
   "name": "mock-first",
-  "description": "Visual-first spec workflows for Claude Code: agree on the screen before you write the code. Ships the core PRD -> mockup -> tasks -> code loop plus three Android variants that build on each other.",
+  "description": "Visual-first spec workflows for Claude Code: agree on the screen before you write the code. Ships the core PRD -> mockup -> tasks -> code loop across seven platform profiles, plus three Android variants that build on each other.",
   "owner": {
     "name": "Heri Kiswanto",
     "email": "heryoulie@gmail.com"
@@ -9,7 +9,7 @@
     {
       "name": "mock-first",
       "source": "./",
-      "description": "Agree on the screen before you write the code. PRD -> mockup -> tasks -> code workflow with impact-aware revisions. Start here for a single-module project."
+      "description": "Agree on the screen before you write the code. PRD -> mockup -> tasks -> code workflow with impact-aware revisions, targeted through per-platform profiles: web, mobile web, Android, iOS, or desktop on macOS, Windows or Linux. Start here for a single-module project."
     },
     {
       "name": "android-factory",

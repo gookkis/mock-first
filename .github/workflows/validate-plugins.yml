@@ -34,7 +34,7 @@ jobs:
         run: |
           set -e
           fail=0
-          for ref in $(grep -rho '/[a-z-]\+:[a-z-]\+' commands variants README.md docs | sort -u); do
+          for ref in $(grep -rho '/[a-z-]\+:[a-z-]\+' commands platforms variants README.md docs | sort -u); do
             ns=${ref%%:*}; ns=${ns#/}; cmd=${ref##*:}
             case "$ns" in
               mock-first) dir=commands ;;

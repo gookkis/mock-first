@@ -96,23 +96,27 @@ You can also copy the command files into your global commands folder — they ar
 Markdown with no plugin-specific syntax:
 
 ```bash
-mkdir -p ~/.claude/commands
+mkdir -p ~/.claude/commands ~/.claude/platforms
 cp commands/*.md ~/.claude/commands/
+cp platforms/*.md ~/.claude/platforms/
 ```
 
-Copied this way they are invoked without a namespace: `/prd`, `/mockup`, and so on. Note that
-the variant command files reference each other by namespace, so they are worth installing as
-plugins rather than copying.
+Copy `platforms/` too — `/mockup`, `/break-task` and `/coding` read the profile for the
+target platform from there when `${CLAUDE_PLUGIN_ROOT}` isn't set. Copied this way the
+commands are invoked without a namespace: `/prd`, `/mockup`, and so on. Note that the variant
+command files reference each other by namespace, so they are worth installing as plugins
+rather than copying.
 
 ## 60-second walkthrough
 
 1. `/prd` — answer a handful of questions one at a time; Claude offers up to 3 brainstormed
    options on the questions that matter (problem, features, scope, stack) and writes
    `docs/PRD.md`.
-2. `/mockup` — Claude builds one self-contained HTML mockup of a screen from the PRD (no
-   variants to choose between — it picks a direction and says why). You open it in a browser;
-   anything off gets fixed in the same file, then it's saved as
-   `docs/mockups/<screen>-approved.html`.
+2. `/mockup` — Claude works out the target platform (web, mobile web, Android, iOS, or one of
+   the three desktop OSes) from the PRD or the repo, then builds one self-contained HTML mockup of a screen at that
+   platform's canvas and conventions (no variants to choose between — it picks a direction
+   and says why). You open it in a browser; anything off gets fixed in the same file, then
+   it's saved as `docs/mockups/<screen>-approved.html`.
 3. `/break-task` — reads the approved mockups and PRD, breaks the work into a checklist at
    `docs/TASKS.md`.
 4. `/coding` — works one task at a time: implement, build, show a short diff summary,
@@ -123,6 +127,53 @@ plugins rather than copying.
 
 The same walkthrough in full, with the actual output at each step:
 [docs/examples/walkthrough.md](docs/examples/walkthrough.md).
+
+## One workflow, seven platforms
+
+A desktop web screen, a phone-browser screen, an Android screen, an iOS screen and a window
+on each of the three desktop OSes are seven different drawings — and seven different file
+layouts, phase orders, build commands and release paths. Rather than one generic "make an HTML
+page", every command resolves the target platform and loads its profile from
+[`platforms/`](platforms/):
+
+| Profile | Canvas | Design language | Verify with |
+| --- | --- | --- | --- |
+| [`web`](platforms/web.md) | 1280x800, content capped ~1140px | sidebar/top nav, dense tables, modals, hover + keyboard | the project's own build |
+| [`mobile-web`](platforms/mobile-web.md) | 390px (holds at 360), `100dvh`, safe areas | one column, thumb-reach actions, bottom sheets, no hover-only paths | build + a 390px viewport |
+| [`android`](platforms/android.md) | 360-412px | Material 3, top app bar, FAB, bottom nav, Compose names in comments | `./gradlew :<module>:assembleDebug` |
+| [`ios`](platforms/ios.md) | 393x852 with safe areas | HIG: large titles, tab bar, inset grouped lists, sheets, SF Symbols | `xcodebuild -scheme <scheme> build` |
+| [`desktop-macos`](platforms/desktop-macos.md) | 1440x900 + a stated minimum window size | HIG: menu bar *outside* the window, source list, `⌘,` Settings window, sheets | `xcodebuild -destination 'platform=macOS'` |
+| [`desktop-windows`](platforms/desktop-windows.md) | 1280x800 at 100%, re-checked at 125% and 150% | Fluent: `NavigationView`, command bar, Mica, caption buttons top-right, snap-friendly | `dotnet build` |
+| [`desktop-linux`](platforms/desktop-linux.md) | 1280x800, and again narrow (tiling WMs) | the toolkit's own HIG — libadwaita header bar, or Qt/KDE menu bar; never both | `meson compile` / `cargo build` |
+
+**Desktop is three profiles, not one.** The menu bar lives at the top of the screen on macOS,
+in a command bar on Windows and (on GNOME) nowhere at all; the caption buttons swap sides; the
+dialog button order reverses; and packaging goes notarized `.dmg`, MSIX, or Flatpak. An
+Electron or Tauri shell does not erase any of that — it just gives you a window on each.
+
+The platform is resolved in this order: an explicit argument (`/mockup desktop-macos
+export-dialog`), a `Platform:` line in the PRD's Technical Stack, then the repo itself
+(`settings.gradle*` → Android, `*.csproj` with WinUI → Windows, `meson.build` → Linux, and so
+on). Only if all three are inconclusive — or the stack is cross-platform, like Flutter,
+Tauri or Compose Multiplatform — does it ask, once, and record the answer in the PRD. `desktop`
+on its own is never accepted as an answer.
+
+Every profile opens with a project-**shape** check before anything is written: a single app
+keeps `docs/mockups/` and `T01`, while a multi-app or multi-module project (more than one
+`com.android.application` module, several app targets in an Xcode workspace or `.sln`, or an
+existing `docs/INDEX.md`) switches to `docs/apps/<app>/mockups/` and app-prefixed task
+numbers — so a second app's screen of the same name never overwrites the first.
+
+Each profile also ends with a **Shipping it** section, so the platform-specific release path
+is reachable from the same place: on Android that is the `/play-store:*` and `/portfolio:*`
+chain below; on iOS, macOS, Windows and Linux it is what that store or installer actually
+demands — notarization, MSIX signing, an AppStream metainfo file for Flathub — stated plainly,
+since no command set covers those here; and on the two web profiles it is whatever the repo
+already deploys with.
+
+A PRD that targets two platforms gets one mockup per platform
+(`<screen>-web.html`, `<screen>-mobile-web.html`) and one set of UI tasks per platform, with
+shared data and domain tasks left unprefixed.
 
 ## What makes it different
 
@@ -181,7 +232,10 @@ have no entry yet or an entry older than its sources.
 Command files are plain markdown with YAML frontmatter (`description`, `allowed-tools`).
 Edit them directly — under `commands/` for the base workflow, or
 `variants/android-factory/` for the Android set — to match your stack's build commands,
-commit message convention, or task phases. See [docs/CONCEPT.md](docs/CONCEPT.md) for the
+commit message convention, or task phases. Anything that is true of one platform rather than
+of the workflow belongs in `platforms/<platform>.md` instead; adding a fifth platform
+(desktop, TV, watch) means writing one more profile there, with the same section headings,
+and nothing else changes. See [docs/CONCEPT.md](docs/CONCEPT.md) for the
 design rationale behind each command.
 
 ## FAQ

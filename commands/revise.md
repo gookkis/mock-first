@@ -9,6 +9,40 @@ Handles changes AFTER the documents exist or coding is underway — a feature th
 cover, a changed feature, a mockup/UI change, a scope change, or a change of technical
 approach.
 
+## Platform (REQUIRED — before anything else)
+
+The document paths, the mockup file names and the verification command are platform-specific.
+
+Seven profiles live in `platforms/`: `web`, `mobile-web`, `android`, `ios`,
+`desktop-windows`, `desktop-macos`, `desktop-linux`. Resolve which one applies:
+
+1. `$ARGUMENTS` starts with a profile name -> that is the platform, and the rest of
+   `$ARGUMENTS` keeps its usual meaning. `desktop` on its own is **not** a platform — the
+   three desktop OSes differ in menu bar, window chrome and packaging, so ask which one.
+2. Otherwise a `Platform:` line — in `docs/TASKS.md` if the breakdown recorded one, then in
+   the PRD's "Technical Stack".
+3. Otherwise read the repo:
+
+   | Signal | Platform |
+   | --- | --- |
+   | `settings.gradle*`, `AndroidManifest.xml` | `android` |
+   | `*.xcodeproj` / `Package.swift` with an iOS destination | `ios` |
+   | the same with a macOS destination, or AppKit | `desktop-macos` |
+   | `*.csproj` / `*.sln` with WinUI, WPF or WinForms | `desktop-windows` |
+   | `meson.build`, or GTK/libadwaita/Qt in the dependencies | `desktop-linux` |
+   | `package.json` with `electron` or `@tauri-apps` | a desktop OS — ask which |
+   | `package.json` with a web framework | `web` or `mobile-web` |
+
+4. Still unclear, or the stack is cross-platform (Flutter, React Native, KMP, Capacitor,
+   Electron, Tauri, Compose Multiplatform) -> **ask once**, naming the candidates. A
+   cross-platform stack still ships one screen per platform; one run does one of them.
+
+Then read the profile — `${CLAUDE_PLUGIN_ROOT}/platforms/<platform>.md`, or
+`~/.claude/platforms/<platform>.md` if the commands were copied in without the plugin — and
+run its project-shape check: a multi-app project keeps its documents under `docs/apps/<app>/`
+with app-prefixed task numbers, and reading `docs/mockups/` there would report screens as
+missing when they are simply somewhere else.
+
 ## Absolute rules
 
 - Run `date +%Y-%m-%d` for the date.
@@ -28,14 +62,17 @@ From `$ARGUMENTS`, or ask if it's empty. Categories:
 
 ## Step 2 — Impact analysis (REQUIRED, and stop after it)
 
-Read `docs/PRD.md`, `docs/TASKS.md`, and `git log --oneline -20`. Report in this format:
+Read the PRD and the task file at the paths the profile gives (`docs/` on a single-app
+project, `docs/apps/<app>/` on a multi-app one), plus `git log --oneline -20`. Report in this
+format:
 
 ```
 Change: <summary>
 
 Impact:
 - PRD              : <affected sections>
-- Mockups          : <screens needing revision, or "none">
+- Mockups          : <screens needing revision, or "none" — name the platform when the
+                     PRD targets more than one, since each has its own file>
 - Tasks not started : <list — just edit them>
 - Tasks ALREADY DONE: <list — the code has to be redone>
 - Committed code   : <related commits, or "none">

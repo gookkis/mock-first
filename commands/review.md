@@ -14,6 +14,40 @@ How it differs from the other commands:
 - `/revise` applies a change you've **already** decided on.
 - `/review` finds **what needs deciding**.
 
+## Platform (REQUIRED — before anything else)
+
+The document paths, the mockup file names and the verification command are platform-specific.
+
+Seven profiles live in `platforms/`: `web`, `mobile-web`, `android`, `ios`,
+`desktop-windows`, `desktop-macos`, `desktop-linux`. Resolve which one applies:
+
+1. `$ARGUMENTS` starts with a profile name -> that is the platform, and the rest of
+   `$ARGUMENTS` keeps its usual meaning. `desktop` on its own is **not** a platform — the
+   three desktop OSes differ in menu bar, window chrome and packaging, so ask which one.
+2. Otherwise a `Platform:` line — in `docs/TASKS.md` if the breakdown recorded one, then in
+   the PRD's "Technical Stack".
+3. Otherwise read the repo:
+
+   | Signal | Platform |
+   | --- | --- |
+   | `settings.gradle*`, `AndroidManifest.xml` | `android` |
+   | `*.xcodeproj` / `Package.swift` with an iOS destination | `ios` |
+   | the same with a macOS destination, or AppKit | `desktop-macos` |
+   | `*.csproj` / `*.sln` with WinUI, WPF or WinForms | `desktop-windows` |
+   | `meson.build`, or GTK/libadwaita/Qt in the dependencies | `desktop-linux` |
+   | `package.json` with `electron` or `@tauri-apps` | a desktop OS — ask which |
+   | `package.json` with a web framework | `web` or `mobile-web` |
+
+4. Still unclear, or the stack is cross-platform (Flutter, React Native, KMP, Capacitor,
+   Electron, Tauri, Compose Multiplatform) -> **ask once**, naming the candidates. A
+   cross-platform stack still ships one screen per platform; one run does one of them.
+
+Then read the profile — `${CLAUDE_PLUGIN_ROOT}/platforms/<platform>.md`, or
+`~/.claude/platforms/<platform>.md` if the commands were copied in without the plugin — and
+run its project-shape check: a multi-app project keeps its documents under `docs/apps/<app>/`
+with app-prefixed task numbers, and reading `docs/mockups/` there would report screens as
+missing when they are simply somewhere else.
+
 ## Absolute rules
 
 - **Read-only.** DO NOT change, create, or delete any file in this command — not the PRD,
@@ -28,7 +62,10 @@ How it differs from the other commands:
 ## Step 1 — Gather the sources
 
 - The PRD (`docs/PRD.md`, or the parent PRD referenced from `docs/INDEX.md`/`README`).
-- `docs/TASKS.md` and `docs/progress-report.md` if they exist.
+- `docs/TASKS.md` and `docs/progress-report.md` if they exist — under `docs/apps/<app>/` on a
+  multi-app project.
+- The approved mockups, from the folder the profile gives. On a PRD that targets more than
+  one platform, a screen is only covered when **every** targeted platform has one.
 - The code structure.
 - `git log --oneline -20` — to spot whether the project ever changed direction.
 

@@ -74,6 +74,14 @@ mock-first/
 │   ├── coding.md
 │   ├── review.md                # read-only drift audit
 │   └── revise.md
+├── platforms/                   # one profile per target platform — canvas, patterns,
+│   ├── web.md                   #   file layout, phase order, verify command, release path
+│   ├── mobile-web.md
+│   ├── android.md
+│   ├── ios.md
+│   ├── desktop-macos.md         # desktop is three profiles: the OSes disagree on the
+│   ├── desktop-windows.md       #   menu bar, the window chrome and the packaging
+│   └── desktop-linux.md
 ├── variants/
 │   └── android-factory/         # multi-module variant: adopt, new-app, per-module docs
 ├── docs/

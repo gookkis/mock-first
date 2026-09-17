@@ -123,7 +123,8 @@ tasks to expect. Only after the user decides does anything change.
 
 - **Not tested across many stacks.** The phases in `/break-task` assume a common order
   (data → logic → UI → integration) that may not fit every architecture.
-- **Mockups are static HTML.** Flows that hinge on complex interaction aren't captured.
+- **Mockups are static HTML.** Flows that hinge on complex interaction aren't captured, and
+  a native screen is approved as an HTML approximation of itself, not as the real thing.
 - **No automated visual verification.** Whether the code matches the mockup depends on the
   model following instructions; there's no screenshot diff.
 - **Solo-dev oriented.** No multi-developer conflict handling or branch orchestration.
@@ -137,7 +138,34 @@ tasks to expect. Only after the user decides does anything change.
 **Longer term:** visual verification (screenshot diff between mockup and implementation); a
 separate skill for project conventions that activates without being called.
 
-## 9. The Android Apps Factory variant
+## 9. Platform profiles
+
+The workflow is the same on every platform; the screen is not. Instead of branching inside
+each command, `/mockup`, `/break-task` and `/coding` resolve the target platform and read one
+profile from `platforms/` — `web`, `mobile-web`, `android`, `ios`, `desktop-macos`,
+`desktop-windows` or `desktop-linux`. A profile owns exactly
+the things that change with the platform: the canvas the mockup is drawn at, the design
+language, the component names to write into HTML comments, the states that platform always
+needs, where files live, the phase order, and the command that verifies a task.
+
+Desktop is deliberately three profiles rather than one. "Desktop" is not a platform a screen
+can be drawn for: the menu bar is at the top of the screen on macOS, in a command bar on
+Windows and often absent on GNOME; the caption buttons swap sides; the dialog button order
+reverses; and the release path is notarization, MSIX signing or a Flathub manifest. A shell
+like Electron or Tauri changes none of that.
+
+Two consequences worth stating. First, the commands stay one file each — an eighth platform is
+a new profile, not an eighth fork of the flow. Second, the profiles are where a project's
+house style belongs: editing `platforms/android.md` retargets every command at once, which is
+the same reason the phase order lives there rather than in `break-task.md`.
+
+Every profile also decides the document layout, because a repo is often a factory of several
+apps over shared modules — most visibly on Android, but equally in an Xcode workspace, a
+`.sln`, or a JavaScript monorepo. The profile checks the project's shape first and picks
+`docs/` or `docs/apps/<app>/` accordingly, so the same command works on a one-app repo and a
+ten-app one without a flag.
+
+## 10. The Android Apps Factory variant
 
 For brownfield multi-module/multi-app projects, see `variants/android-factory/`. The main
 differences: the parent PRD is never touched (the commands add a layer underneath it),
