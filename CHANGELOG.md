@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 — 2026-09-17
 
 ### Fixed
 
@@ -10,6 +10,42 @@
 
 ### Added
 
+- `platforms/` — one profile per target platform (`web`, `mobile-web`, `android`, `ios`,
+  `desktop-macos`, `desktop-windows`, `desktop-linux`), each owning the canvas the mockup is
+  drawn at, the design language, the component names to write into HTML comments, the states
+  that platform always needs, where files live, the phase order and the command that verifies
+  a task. `/mockup`, `/break-task` and `/coding`
+  resolve the platform (explicit argument, then the PRD's Technical Stack, then the repo
+  itself) and read the matching profile; they only ask when all three are inconclusive or
+  the stack is cross-platform, and then record the answer as a `Platform:` line in the PRD.
+- **Desktop is three profiles, not one.** The three OSes disagree on where the menu bar lives
+  (top of the screen on macOS, a command bar on Windows, often nowhere on GNOME), which side
+  the caption buttons sit on, the button order in a dialog, and how the app is packaged
+  (notarized `.dmg`, MSIX, Flatpak). An Electron or Tauri shell does not erase any of that, so
+  `desktop` on its own is rejected as a platform and the command asks which OS. The Linux
+  profile asks one more question first — GTK/libadwaita or Qt/KDE — because Linux has no
+  single HIG to fall back on.
+- Every profile checks the project's shape before writing anything: a single app keeps
+  `docs/mockups/` and `T01`, while a multi-app or multi-module project — more than one
+  `com.android.application` module, any `:core:*`/`:feature:*` module, several app targets in
+  an Xcode workspace or `.sln`, several apps in a JavaScript monorepo, or an existing
+  `docs/INDEX.md` — switches to `docs/apps/<app>/mockups/` and app-prefixed task numbers, so
+  a second app's screen of the same name can't overwrite the first.
+- Each profile ends with a "Shipping it" section, which is where the platform's release path
+  now hangs: Android names the `/play-store:*` and `/portfolio:*` chain in order; iOS, macOS,
+  Windows and Linux state what that store or installer actually demands — notarization and a
+  universal binary, MSIX and code signing against SmartScreen, an AppStream metainfo file for
+  Flathub — and say plainly that no command set covers them here; the web profiles point at
+  whatever the repo already deploys with. `/coding` suggests that step when the last task is
+  checked off.
+- The platform-resolution block is one shared table of repo signals across all five commands,
+  rather than prose repeated five times, so an eighth platform is one row and one new profile.
+- `/revise` and `/review` resolve the platform too, so on a multi-app Android or iOS project
+  they read `docs/apps/<app>/` instead of reporting every screen as missing from
+  `docs/mockups/`.
+- A PRD that targets two platforms now produces one mockup per platform
+  (`<screen>-web.html`, `<screen>-mobile-web.html`) and one set of UI tasks per platform,
+  with shared data and domain tasks left unprefixed.
 - The three variants ship as installable plugins from the same marketplace instead of
   copy-by-hand command folders: `android-factory@mock-first`, `play-store@mock-first` and
   `portfolio@mock-first`, each with its own `.claude-plugin/plugin.json`.
@@ -22,6 +58,16 @@
 
 ### Changed
 
+- `/mockup` no longer produces a generic full-width HTML page. It builds at the platform's
+  canvas — 1280x800 for web, 390px for mobile web, 360-412px for Android, 393x852 with safe
+  areas for iOS — and names the component the code will use (`<!-- LazyColumn -->`,
+  `<!-- NavigationStack -->`, `<!-- <DataTable> -->`) in a comment.
+- `/break-task` takes its phase order from the profile instead of the one generic six-phase
+  list, and `/coding` takes its build command and commit area from the profile rather than
+  building whatever the project's default target is.
+- The Android notes that only existed inside the `android-factory` variant — phone viewport,
+  Material 3, Compose component names, module-scoped builds — are now in
+  `platforms/android.md`, where the base commands can reach them on a single-app project too.
 - The android-factory commands moved out of the `mock-first` command namespace into their
   own: `/mock-first:adopt` is now `/android-factory:adopt`, and so on for all 8. They had
   been sharing a namespace with the base plugin, which meant the two could not be installed
