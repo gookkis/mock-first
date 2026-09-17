@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-09-17
+
+**Breaking for anyone already using `android-factory`:** `/android-factory:mockup` is gone and
+the plugin now requires `mock-first`. Use `/mock-first:mockup app:<name> <screen>` — it writes
+into the same folder the old command did.
 
 ### Removed
 
@@ -24,7 +28,8 @@
   `MODULE.md` as the layout authority, scope prefixes on task numbers, the rule that one
   module owns one `TASKS.md`, the cross-app impact check, and the discipline that a Gradle
   module is never committed without its documents.
-- `android-factory` 0.1.0 -> 0.2.0.
+- `android-factory` 0.1.0 -> 0.2.0. The other three manifests are unchanged: `mock-first`
+  0.2.0, `play-store` 0.2.0, `portfolio` 0.1.0 — nothing inside them changed in this release.
 
 ## 0.2.0 — 2026-09-17
 
