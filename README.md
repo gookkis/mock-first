@@ -63,7 +63,7 @@ comes with it:
 | Install | You get | Pulls in |
 | --- | --- | --- |
 | `android-factory@mock-first` | `/android-factory:*` — the module-scoped deltas, plus `new-app` and `docs` | `mock-first` |
-| `play-store@mock-first` | `/play-store:*` — screenshots, listing, ASO | `android-factory`, `mock-first` |
+| `play-store@mock-first` | `/play-store:*` — screenshots, listing, ASO, AdMob and Play Console setup | `android-factory`, `mock-first` |
 | `portfolio@mock-first` | `/portfolio:*` — site entry, privacy policy, staleness report | `play-store`, `android-factory`, `mock-first` |
 
 ```bash
@@ -226,6 +226,15 @@ emulator, Node.js, and Playwright are installed and prints install commands for 
 is missing. Then `/play-store:capture`, `/play-store:enhance`, `/play-store:listing`, and
 `/play-store:aso` take one app module from raw ADB captures to an uploadable
 `fastlane/metadata/android/` folder and a scored ASO report.
+
+Two commands then drive the consoles through Claude in Chrome, in the browser where you are
+already signed in. `/play-store:admob <app>` creates the AdMob app and one ad unit per format
+the code actually loads, writes the ids into the git-ignored `local.properties`, proves they
+reach the release manifest, and with `--gdpr` attaches the app to the consent message.
+`/play-store:console <app>` creates the app in Play Console and transcribes the listing and
+the App content answer sheet into it — declarations, content rating, data safety, store
+settings, and the listing text and graphics per locale — stopping before testers and the
+bundle upload, which stay yours.
 
 `portfolio@mock-first` ([`variants/portfolio/`](variants/portfolio/)) closes the loop: `/portfolio:publish <app>`
 turns that listing and those images into a portfolio entry on a personal Astro site (one

@@ -322,8 +322,9 @@ Also record in `console.md`:
 Print two tables: the character/asset table from Step 4, and the Console checklist with one
 row per item and its status. End with the blockers in order, then:
 
-- `--upload` next step, or the manual path: Console → Store presence → Store listing, then
-  Policy → App content.
+- `--upload` next step, or `/play-store:console <app>` to fill the Console through the
+  browser (listing, store settings, and every App content declaration from `console.md`), or
+  the manual path: Console → Store presence → Store listing, then Policy → App content.
 - `/play-store:aso <app>` to audit the text once it's written.
 
 ## Step 9 — `--upload` (optional)
@@ -338,7 +339,7 @@ fastlane supply --skip_upload_apk --skip_upload_aab \
 
 Add `--skip_upload_changelogs` when no `--notes` run wrote any. `supply` uploads store
 listing text and images only — **no App content declaration can be uploaded**; those stay
-manual, which is what `console.md` is for.
+manual (or `/play-store:console`), which is what `console.md` is for.
 
 Otherwise print the command and the two setup steps (service account JSON in the Play
 Console, `fastlane supply init`) and stop.

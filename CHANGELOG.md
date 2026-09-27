@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `/play-store:admob <app>` — creates the AdMob app and one ad unit per ad format the app's
+  code loads (banner, interstitial, rewarded, app open, native), through Claude in Chrome.
+  Writes the ids into `local.properties` under the keys the build reads, checks the release
+  manifest carries the real app id, and with `--gdpr` attaches the app to the published
+  consent message. Encodes the AdMob UI quirks: format cards selected by `aria-label`, the
+  name field filled through the native setter, the row shift the privacy-URL banner causes.
+- `/play-store:console <app>` — creates the app in Play Console and fills everything up to
+  the first bundle upload: every App content declaration (including the IARC questionnaire
+  and Data safety), store settings, and per-locale listing text and graphics, from the
+  answer sheet `/play-store:listing` writes. Stops before testers, releases and review.
+  Records what makes the Console automatable: the Angular validator needs a real key event
+  after a programmatic value, the asset library matches by file name across slots, a
+  timed-out script keeps running and adds a second set, and the 7" and 10" tablet slots are
+  required even for a phone-only app.
+
 ## 0.3.0 — 2026-09-17
 
 **Breaking for anyone already using `android-factory`:** `/android-factory:mockup` is gone and
