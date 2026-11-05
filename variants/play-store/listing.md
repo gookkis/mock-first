@@ -30,7 +30,7 @@ Read `$ARGUMENTS`:
 | `--text` | Only the store listing text (Steps 2-4). Skip the declarations. |
 | `--console` | Only the App content answer sheet (Steps 5-7). Skip the listing text. |
 | `--images` | Only refresh the image folders from `docs/store/<app>/out/`. |
-| `--notes <text>` | Write the release notes (`changelogs/<versionCode>.txt`) for this version, ≤500 chars per locale. Without a value, draft them from the last commits since the previous version tag. |
+| `--notes <text>` | Only (re)write the release notes for this version: `changelogs/<versionCode>.txt` per locale (≤500 chars each) plus the combined `docs/store/<app>/release-notes/<versionCode>.txt`. Without a value, draft them from the commits since the previous version tag. A full run writes them too. |
 | `--upload` | After writing, run `fastlane supply` for metadata only (asks first; needs fastlane + a configured `Appfile`/JSON key). |
 
 ## Absolute rules
@@ -112,8 +112,34 @@ readable on its own; it shows above the fold on the store page.
   in a list. The Console penalizes stuffing.
 - Plain text only. Line breaks separate paragraphs. Unicode bullets (`•`) are fine.
 
-**Release notes (≤500, with `--notes`):** what changed, user-visible, in that locale. No
-version numbers alone ("bug fixes" is a wasted field), no promotional text.
+**Release notes (≤500 per locale, every full run and `--notes`):** what changed, user-visible,
+in that locale. No version numbers alone ("bug fixes" is a wasted field), no promotional
+text. On a first listing, describe the release itself. Read `versionCode` from the app
+module's `build.gradle(.kts)`; never guess it.
+
+Write them twice from the same text: once per locale for `fastlane supply`, and once as
+**one combined file for every supported locale** — the block the Console's release-notes
+box takes when pasted, one tag per locale, in `--locale` order:
+
+```
+<en-US>
+• ...
+</en-US>
+<id>
+• ...
+</id>
+```
+
+Build the combined file by script from the per-locale files, never by hand, so the two
+can't drift:
+
+```
+{ for l in <locales>; do echo "<$l>"; cat <app-module>/fastlane/metadata/android/$l/changelogs/<versionCode>.txt; echo "</$l>"; done; } \
+  > docs/store/<app>/release-notes/<versionCode>.txt
+```
+
+It lives under `docs/store/`, not `fastlane/metadata/android/`: `supply` treats every folder
+there as a locale.
 
 ## Step 4 — Write the listing files
 
@@ -123,7 +149,7 @@ version numbers alone ("bug fixes" is a wasted field), no promotional text.
   short_description.txt
   full_description.txt
   video.txt                <- only when the user has a YouTube URL (public/unlisted, ads off, not age-restricted)
-  changelogs/<versionCode>.txt
+  changelogs/<versionCode>.txt   <- per locale, for supply
   images/
     phoneScreenshots/      <- from docs/store/<app>/out/<locale>/01-*.jpg ...
     sevenInchScreenshots/  <- from out-tablet7/<locale>/ if present
@@ -131,6 +157,9 @@ version numbers alone ("bug fixes" is a wasted field), no promotional text.
     featureGraphic.<ext>   <- from docs/store/<app>/out/<locale>/featureGraphic.*
     icon.png               <- ic_launcher-playstore.png (512x512) if found
 ```
+
+Plus the combined, paste-ready notes for all locales:
+`docs/store/<app>/release-notes/<versionCode>.txt` (format above).
 
 Locale folder codes: `id`, `en-US`, `ms`, `en-GB`, `ja-JP`, etc. (the Play Console codes,
 not Android resource qualifiers). Map `en` -> `en-US`.
@@ -320,7 +349,9 @@ Also record in `console.md`:
 ## Step 8 — Report
 
 Print two tables: the character/asset table from Step 4, and the Console checklist with one
-row per item and its status. End with the blockers in order, then:
+row per item and its status. Print the path of the combined release notes
+(`docs/store/<app>/release-notes/<versionCode>.txt`) and the per-locale counts. End with the
+blockers in order, then:
 
 - `--upload` next step, or `/play-store:console <app>` to fill the Console through the
   browser (listing, store settings, and every App content declaration from `console.md`), or
@@ -337,7 +368,7 @@ fastlane supply --skip_upload_apk --skip_upload_aab \
   --metadata_path <app-module>/fastlane/metadata/android -p <applicationId>
 ```
 
-Add `--skip_upload_changelogs` when no `--notes` run wrote any. `supply` uploads store
+Add `--skip_upload_changelogs` when no changelog exists for the current `versionCode`. `supply` uploads store
 listing text and images only — **no App content declaration can be uploaded**; those stay
 manual (or `/play-store:console`), which is what `console.md` is for.
 
@@ -348,4 +379,4 @@ Console, `fastlane supply init`) and stop.
 
 Re-running with the same answers rewrites the same text. Use `--images` after every
 `/play-store:enhance` run to refresh only the pictures, `--console` after a permission or
-SDK change to re-derive the declarations, and `--notes` per release.
+SDK change to re-derive the declarations, and `--notes` per release (one combined file per `versionCode`).
