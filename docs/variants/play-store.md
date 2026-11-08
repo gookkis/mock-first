@@ -18,7 +18,7 @@ caption), the text listing, and an ASO audit.
 | `/play-store:doctor` | Checks that every tool below is installed and reports what's missing, with install commands per OS. Read-only; `--fix` installs Playwright into the project after asking. |
 | `/play-store:capture <app>` | Detects whether the app is Compose or Views and how its screens can be reached (declared deep link, own Activity, or walking the UI), then builds, installs, sets a clean demo status bar, turns animations off, walks the screens listed in `docs/store/<app>/screens.yml`, captures each via ADB, and looks at every capture to reject blank or broken ones. Raw output only. `--from-previews` renders `@Preview` composables instead, when the project already has Compose preview screenshot testing configured. |
 | `/play-store:enhance <app>` | Renders each raw capture into a 1080x1920 marketing image (device frame, brand gradient, localized headline) plus the 1024x500 feature graphic. HTML templates rendered by Playwright; styles `bleed`, `tilt`, `clean`, `plain`; tablet layout with `--tablet`. |
-| `/play-store:listing <app>` | Guided Q&A, then writes title / short / full description (and release notes) per locale into `fastlane/metadata/android/<locale>/`, writes the release notes for every locale into one paste-ready `docs/store/<app>/release-notes/<versionCode>.txt`, copies the images alongside, and enforces the 30/80/4000/500 budgets by script. It also scans the app's permissions and SDKs and writes `docs/store/<app>/console.md`: the answer sheet for Store settings and every App content declaration — privacy policy, app access, ads, content rating, target audience, data safety, advertising ID, and the government / financial / health / news forms. `--upload` runs `fastlane supply` for metadata; declarations stay manual because the Console has no API for them. |
+| `/play-store:listing <app>` | Guided Q&A, then writes title / short / full description (and release notes) per locale into `fastlane/metadata/android/<locale>/`, writes the release notes for every locale into one paste-ready `docs/store/<app>/changelogs.txt` (rewritten on every `versionCode` bump, whichever flags the run has), copies the images alongside, and enforces the 30/80/4000/500 budgets by script. It also scans the app's permissions and SDKs and writes `docs/store/<app>/console.md`: the answer sheet for Store settings and every App content declaration — privacy policy, app access, ads, content rating, target audience, data safety, advertising ID, and the government / financial / health / news forms. `--upload` runs `fastlane supply` for metadata; declarations stay manual because the Console has no API for them. |
 | `/play-store:aso <app>` | Scores the listing on keywords, budgets, policy risk, localization, and screenshots; fetches competitor store pages for a side-by-side; writes a dated report with ranked rewrites. Honest about what it can't know (search volume). |
 
 ## Pipeline
@@ -83,7 +83,8 @@ docs/store/<app>/
   listing.md             <- the approved text per locale + keywords (read by /aso)
   console.md             <- Store settings + every App content declaration, pre-answered
   data-safety.md         <- Data safety answers (shared with /portfolio:privacy)
-  release-notes/<versionCode>.txt <- every locale in one paste-ready file (<en-US>…</en-US><id>…</id>)
+  changelogs.txt         <- current version's notes, every locale in one paste-ready file (<en-US>…</en-US><id>…</id>)
+  changelogs.version     <- "<versionCode> <versionName>" that changelogs.txt belongs to
 fastlane/metadata/android/<locale>/
   title.txt  short_description.txt  full_description.txt  video.txt
   changelogs/<versionCode>.txt

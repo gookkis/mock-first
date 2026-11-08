@@ -30,7 +30,7 @@ Read `$ARGUMENTS`:
 | `--text` | Only the store listing text (Steps 2-4). Skip the declarations. |
 | `--console` | Only the App content answer sheet (Steps 5-7). Skip the listing text. |
 | `--images` | Only refresh the image folders from `docs/store/<app>/out/`. |
-| `--notes <text>` | Only (re)write the release notes for this version: `changelogs/<versionCode>.txt` per locale (≤500 chars each) plus the combined `docs/store/<app>/release-notes/<versionCode>.txt`. Without a value, draft them from the commits since the previous version tag. A full run writes them too. |
+| `--notes <text>` | Only (re)write the release notes for this version: `changelogs/<versionCode>.txt` per locale (≤500 chars each) plus the combined `docs/store/<app>/changelogs.txt`. Without a value, draft them from the commits since the previous version. A full run writes them too, and every run writes them when the version went up (Step 1). |
 | `--upload` | After writing, run `fastlane supply` for metadata only (asks first; needs fastlane + a configured `Appfile`/JSON key). |
 
 ## Absolute rules
@@ -71,6 +71,16 @@ Read `$ARGUMENTS`:
 4. Privacy policy URL: `docs/store/<app>/data-safety.md`, the portfolio entry, or
    `~/.claude/portfolio.yml` (`<site_url>/apps/<slug>/privacy-policy`). If there is none,
    this is a blocker — say so early and point to `/portfolio:privacy <app>`.
+5. **Version upgrade check (every run, whatever the flags).** Compare the module's current
+   `versionCode` with the newest `fastlane/metadata/android/*/changelogs/<n>.txt` and with
+   `docs/store/<app>/changelogs.version` (the version `changelogs.txt` belongs to, see
+   Step 3). If the current
+   `versionCode` has no changelog in every locale, or `changelogs.txt` belongs to an older
+   version, the version went up: write the release notes for the new `versionCode` (Step 3,
+   release notes) and rebuild `changelogs.txt` in this run, even under `--text`,
+   `--console` or `--images`. Draft them from the commits since the previous version
+   (`git log <previous-version-tag>..HEAD`, or since the commit that last touched
+   `changelogs.txt` when there is no tag) and show the draft before writing.
 
 ## Step 2 — Q&A (skip what's already answered by the documents or `--from`)
 
@@ -118,8 +128,10 @@ text. On a first listing, describe the release itself. Read `versionCode` from t
 module's `build.gradle(.kts)`; never guess it.
 
 Write them twice from the same text: once per locale for `fastlane supply`, and once as
-**one combined file for every supported locale** — the block the Console's release-notes
-box takes when pasted, one tag per locale, in `--locale` order:
+**`docs/store/<app>/changelogs.txt`: one combined file for every supported locale** — the
+block the Console's release-notes box takes when pasted, one tag per locale (Play Console
+locale code), in `--locale` order. It always holds the current version only; a version
+upgrade rewrites it (git keeps the old ones):
 
 ```
 <en-US>
@@ -135,8 +147,13 @@ can't drift:
 
 ```
 { for l in <locales>; do echo "<$l>"; cat <app-module>/fastlane/metadata/android/$l/changelogs/<versionCode>.txt; echo "</$l>"; done; } \
-  > docs/store/<app>/release-notes/<versionCode>.txt
+  > docs/store/<app>/changelogs.txt
+echo "<versionCode> <versionName>" > docs/store/<app>/changelogs.version
 ```
+
+The file must contain nothing but the tagged blocks (no header, no version line): it is
+pasted as is. The version it belongs to lives in `changelogs.version`, which the Step 1
+upgrade check reads. If an older `docs/store/<app>/release-notes/` folder exists, leave it.
 
 It lives under `docs/store/`, not `fastlane/metadata/android/`: `supply` treats every folder
 there as a locale.
@@ -158,8 +175,8 @@ there as a locale.
     icon.png               <- ic_launcher-playstore.png (512x512) if found
 ```
 
-Plus the combined, paste-ready notes for all locales:
-`docs/store/<app>/release-notes/<versionCode>.txt` (format above).
+Plus the combined, paste-ready notes for all locales: `docs/store/<app>/changelogs.txt`
+and its `changelogs.version` (format above).
 
 Locale folder codes: `id`, `en-US`, `ms`, `en-GB`, `ja-JP`, etc. (the Play Console codes,
 not Android resource qualifiers). Map `en` -> `en-US`.
@@ -350,7 +367,8 @@ Also record in `console.md`:
 
 Print two tables: the character/asset table from Step 4, and the Console checklist with one
 row per item and its status. Print the path of the combined release notes
-(`docs/store/<app>/release-notes/<versionCode>.txt`) and the per-locale counts. End with the
+(`docs/store/<app>/changelogs.txt`), the `versionCode` it belongs to, whether this run
+detected a version upgrade, and the per-locale counts. End with the
 blockers in order, then:
 
 - `--upload` next step, or `/play-store:console <app>` to fill the Console through the
@@ -379,4 +397,5 @@ Console, `fastlane supply init`) and stop.
 
 Re-running with the same answers rewrites the same text. Use `--images` after every
 `/play-store:enhance` run to refresh only the pictures, `--console` after a permission or
-SDK change to re-derive the declarations, and `--notes` per release (one combined file per `versionCode`).
+SDK change to re-derive the declarations, and `--notes` to redo a release's notes. Any run
+after a `versionCode` bump writes the new notes and rewrites `changelogs.txt` by itself.

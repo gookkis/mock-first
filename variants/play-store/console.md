@@ -164,9 +164,10 @@ Open the dashboard and expand **View tasks**. Report, and stop:
 - **The bundle** — built with the upload key. An AAB signed with the debug key (no
   `keystore.properties` on this machine) is rejected at upload; check with
   `keytool -printcert -jarfile <aab>` and say so if the owner is `CN=Android Debug`.
-- **Release notes** — paste `docs/store/<app>/release-notes/<versionCode>.txt` into the
-  release's notes box as is: it already holds every locale in `<locale>…</locale>` tags.
-  If it is missing, run `/play-store:listing <app> --notes` first; the per-locale copies are
+- **Release notes** — paste `docs/store/<app>/changelogs.txt` into the release's notes box
+  as is: it already holds every locale in `<locale>…</locale>` tags. Check that
+  `docs/store/<app>/changelogs.version` matches the bundle's `versionCode`; if the file is
+  missing or older, run `/play-store:listing <app> --notes` first; the per-locale copies are
   in `fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt`.
 - Countries are chosen when the release is created.
 - A personal developer account created after November 2023 needs a closed test (12
