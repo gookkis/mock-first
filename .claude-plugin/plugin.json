@@ -1,6 +1,6 @@
 {
   "name": "mock-first",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Visual-first spec workflow for Claude Code. PRD -> HTML mockup -> tasks -> code, with a /revise command that reports impact before anything changes. Mockups, task phases, build commands and release paths follow a per-platform profile: web, mobile web, Android, iOS, or desktop on macOS, Windows or Linux.",
   "author": {
     "name": "Heri Kiswanto",

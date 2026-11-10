@@ -1,6 +1,6 @@
 {
   "name": "android-factory",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Mock-First for an Android multi-module apps factory. Extends the base plugin: every command is scoped to app:<name>, core:<module> or module:<:gradle:path>, so a shared-module change is reported against every app that depends on it. Adds /android-factory:new-app and /android-factory:docs.",
   "author": {
     "name": "Heri Kiswanto",

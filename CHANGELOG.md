@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-11-10
 
 ### Added
 
@@ -18,6 +18,21 @@
   after a programmatic value, the asset library matches by file name across slots, a
   timed-out script keeps running and adds a second set, and the 7" and 10" tablet slots are
   required even for a phone-only app.
+
+### Changed
+
+- `/play-store:listing` writes the release notes on every run where the module's
+  `versionCode` went up, whatever the flags: the per-locale
+  `changelogs/<versionCode>.txt`, drafted from the commits since the previous version, plus
+  one combined `docs/store/<app>/changelogs.txt` with every locale in `<locale>…</locale>`
+  tags, ready to paste into the Console. `changelogs.version` records which version it
+  belongs to. `/play-store:console` points at that file when creating a release.
+
+### Fixed
+
+- The plugin manifests now carry the release version. They had stayed at 0.2.0 (portfolio
+  0.1.0) through 0.3.0 and the play-store changes above, so `/plugin` update could keep
+  serving a stale cache. All four plugins now share the repo's version.
 
 ## 0.3.0 — 2026-09-17
 

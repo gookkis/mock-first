@@ -1,6 +1,6 @@
 {
   "name": "portfolio",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Turn a shipped app into a portfolio entry on an Astro site, write its privacy policy and Play Console Data Safety summary from what the code actually does, and report which entries are stale.",
   "author": { "name": "Heri Kiswanto", "email": "heryoulie@gmail.com", "url": "https://github.com/gookkis" },
   "license": "MIT",

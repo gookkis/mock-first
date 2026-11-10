@@ -1,6 +1,6 @@
 {
   "name": "play-store",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Take one Android app module from raw ADB captures to an uploadable Play Store listing: capture at store sizes, frame and caption, write per-locale copy, audit for ASO.",
   "author": {
     "name": "Heri Kiswanto",
