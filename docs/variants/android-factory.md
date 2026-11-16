@@ -36,6 +36,7 @@ their base counterparts rather than as copies of them.
 After that, as needed:
 ```bash
 /android-factory:new-app                            # a new app following an existing app's pattern
+/android-factory:build-app "<brief>" --ref tokoku   # brief -> ready-to-try app in one pass (standalone repo by default)
 /android-factory:prd app:tokoku checkout feature    # a feature in one app
 /android-factory:prd core:ui                        # a shared-module change
 /mock-first:mockup app:tokoku checkout
@@ -81,6 +82,7 @@ There's no manual "remember to update the docs" step — each command handles it
 |---|---|
 | `/adopt` | every module in `settings.gradle` gets a docs folder, `MODULE.md` filled from the code |
 | `/new-app` | the app and its local modules are registered in `INDEX.md` and given docs |
+| `/build-app` | PRD (with "Decisions taken without asking"), mockups, tasks, scaffold, every task, quality pass, release smoke test — then one hand-off for the owner to try |
 | `/prd` | a new module surfacing in the Q&A is registered and documented immediately |
 | `/break-task` | Phase 0 requires a "register module + create docs folder" task; the last task refreshes `MODULE.md` |
 | `/coding` | a new Gradle module gets documented before the commit; `MODULE.md` is refreshed and staged alongside its code |

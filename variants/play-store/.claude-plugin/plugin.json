@@ -1,7 +1,7 @@
 {
   "name": "play-store",
-  "version": "0.4.0",
-  "description": "Take one Android app module from raw ADB captures to an uploadable Play Store listing: capture at store sizes, frame and caption, write per-locale copy, audit for ASO.",
+  "version": "0.5.0",
+  "description": "Take one Android app module from upload key to Send for review: signing, AdMob, captures for phone and 7\"/10\" tablets, framed screenshots, per-locale copy, Play Console setup, release and in-app products, ASO audit. /play-store:ship runs it in order.",
   "author": {
     "name": "Heri Kiswanto",
     "email": "heryoulie@gmail.com",

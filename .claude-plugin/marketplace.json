@@ -14,12 +14,12 @@
     {
       "name": "android-factory",
       "source": "./variants/android-factory",
-      "description": "Mock-First scoped to an Android multi-module apps factory, so a shared-module change is reported against every app that depends on it."
+      "description": "Mock-First scoped to an Android multi-module apps factory, so a shared-module change is reported against every app that depends on it. /android-factory:build-app takes a brief and a reference app to a ready-to-try app in one pass."
     },
     {
       "name": "play-store",
       "source": "./variants/play-store",
-      "description": "Play Store screenshots, per-locale listing copy and an ASO audit for one app module. Pulls in android-factory."
+      "description": "From upload key to Send for review for one app module: signing, AdMob, screenshots, per-locale listing, Play Console, release, in-app products, ASO. Pulls in android-factory."
     },
     {
       "name": "portfolio",

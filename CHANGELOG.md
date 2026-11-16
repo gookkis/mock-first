@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.5.0 — 2026-11-17
+
+Lessons from a week of Play releases (two updates to live apps, three new apps),
+folded back into the commands so the store half no longer needs a side playbook.
+
+### Added
+
+- `/android-factory:build-app "<brief>" --ref <app>` — a new app from a brief and a reference
+  app in one pass: PRD, mockups, tasks, scaffold (standalone repo by default, `--in-factory`
+  for a factory app), every task implemented and committed, a quality pass (states, tablets,
+  locales, time-based logic, optional hardware, nothing that looks like a template) and a
+  release smoke test. Takes the recommended option at each gate and lists those decisions in
+  the PRD; stops once, for the owner to try the app. `--ask` restores the gates.
+- `/play-store:signing <app>` — the app's own upload key in the publisher's key folder (never
+  re-keys a live app), wired through `RELEASE_*` in `local.properties`, fingerprint checked on
+  the release bundle. Finds `keytool` in Android Studio's JBR; catches the empty-keystore
+  failure.
+- `/play-store:release <app>` — the publishing half `/play-store:console` leaves out: preflight
+  (versionCode above upstream, upload key, real ad ids, release smoke test), upload to
+  internal/closed/production, notes, testers, Send for review; updates to live apps (devices
+  lost must be 0); `--products` creates the one-time products the code queries once a BILLING
+  bundle exists. Bundles over 10 MB become a saved draft plus an exact hand-off.
+- `/play-store:ship <app>` — signing → privacy → AdMob → listing → captures → graphics →
+  Console → release → products, in that order, stopping only for owner-only actions.
+- `~/.claude/mock-first/publisher.yml` — shared publisher settings (key folder, certificate
+  name, support email, website, privacy URL pattern, git org/branch, tester list, autonomy).
+
+### Changed
+
+- `/play-store:capture` and `/play-store:enhance`: `--tablet 7` (portrait, `raw-tablet7/` →
+  `out-tablet7/` at 1080x1920, new `tablet7.html`) alongside `--tablet 10` (the old
+  `--tablet`). Play requires both slots and accepts only 9:16 or 16:9 — a 1200x1920 render is
+  rejected. Capture documents copying the debug app's data between AVDs with `run-as`.
+- `/play-store:console`: listing path is `store-listings` (the old `main-store-listing`
+  redirects); questions are matched by text, not index (a new IARC question shifted every
+  answer after it); reload and read back after Save (a Data safety save kept nothing); Data
+  safety only after the privacy URL is live; trader-status declaration added; release work
+  handed to `/play-store:release`.
+- `platforms/android.md`: a "Release hardening" section (release build on an emulator with
+  logcat, the `RoomDatabase` keep rule AdMob needs, debug pinned to test ad ids, optional
+  hardware, no on-demand GMS modules in core flows, versioned shared data, locale formatting,
+  tablet width, time-based features, `JAVA_HOME`, upstream versionCode check) and the full
+  Android command list.
+
 ## 0.4.0 — 2026-11-10
 
 ### Added

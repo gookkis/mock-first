@@ -28,7 +28,8 @@ act: choosing testers and uploading a bundle signed with their upload key.
   Program Policies and US export declarations on the create form, and the IARC terms on the
   rating questionnaire. It covers nothing else: no payment profile, no account setting, no
   new tester list, no release, no "Send for review".
-- **Never upload a bundle, create a release, pick testers, or send anything for review.**
+- **Never upload a bundle, create a release, pick testers, or send anything for review here.**
+  That is `/play-store:release`, which the owner invokes on purpose (or `/play-store:ship`).
   Tester emails are personal data the user chooses; a release is theirs to cut.
 - **Never invent a tester, contact, or website.** Contact email and website come from
   `console.md` / the app's support links.
@@ -65,6 +66,13 @@ Play Console is an Angular app. What reliably works, learned the hard way:
 - **Screenshots time out** on this console now and then; wait and retry rather than assume
   the click failed. Never resize the window: it desyncs the capture frame from the page.
 - **Dialogs** (`material-dialog`) hold their own Save; the page's Save is a different button.
+- **"Change saved" is not proof.** After each form, reload the page and read the answers
+  back. A Data safety Save once reported nothing wrong and kept none of the answers.
+- **Match questions by their text, never by position.** Google adds questions (a "random
+  items / loot box" question appeared mid-2026) and every index after it shifts. Keyword
+  matching misfires too ("browser", "loot box" answered Yes): re-read every answer before Next.
+- **Click by element, not by pixel.** The page's DOM coordinates and the screenshot frame
+  differ; use `find` refs or `element.click()`.
 
 ## Step 1 — Inputs
 
@@ -103,13 +111,17 @@ these pages; answer from `console.md`, Save, confirm "Change saved", go back.
 | `privacy-policy` | the URL (native setter, then Save) |
 | `ads-declaration` | Yes / No |
 | `testing-credentials` (sign-in details) | "Is any part of your app restricted?" — No when there is no login and no paywall |
-| `content-rating-overview` → questionnaire | email (support address); category (`All Other App Types` for a utility); IARC terms; then **every** question answered from `console.md` — watch "Is the app primarily a news or educational product?": an education app is **Yes**. Next is disabled until the page is saved: **Save**, then **Next**, then **Save** on the summary. Record the ratings shown |
+| `content-rating-overview` → questionnaire | (questions by text — see Step 0) email (support address); category (`All Other App Types` for a utility); IARC terms; then **every** question answered from `console.md` — watch "Is the app primarily a news or educational product?": an education app is **Yes**. Next is disabled until the page is saved: **Save**, then **Next**, then **Save** on the summary. Record the ratings shown |
 | `target-audience-content` | the age groups ticked in `console.md`; under-13 groups pull the app into the Families policy, so only if `console.md` says so. The later steps are skipped when no child group is ticked |
 | `data-privacy-security` (Data safety) | Step 2: collects/shares yes/no, encryption in transit, account creation method ("My app does not allow users to create an account"), external login, deletion request. Step 3: expand each category with its **Show** button (collapsed sections do not render their checkboxes) and tick the data types. Step 4: per type, **Start** → collected / shared, ephemeral, required/optional, purposes — same for both lists — Save in the dialog. Step 5: check the preview, Save |
 | `ad-id-declaration` | Yes + purposes, when the merged manifest has `AD_ID` |
 | `government-apps` | No, unless stated |
 | `finance` | the last checkbox, "My app doesn't provide any financial features", after "Or" — Next — Save |
 | `health` | "My app does not have any health features" — Next — Save (verify which box is ticked by screenshot; its label reads as "Or" in the DOM) |
+| trader status ("App-level trader status and Terms of Service") | from `console.md`; if it has no answer, ask once (a developer selling in-app products is normally a trader). Terms of Service link only if the site has one |
+
+Do Data safety **after** the privacy policy URL is saved and live; filled before that, its
+answers were lost on Save. Fill it in one sitting, reload, confirm every data type is listed.
 
 Finish when the overview shows **Actioned** only and no "Start declaration" button remains.
 
@@ -121,7 +133,11 @@ Finish when the overview shows **Actioned** only and no "Start declaration" butt
   `https://…`. Phone only if `console.md` gives one.
 - Leave External marketing as it is.
 
-## Step 5 — Store listing (`main-store-listing`)
+## Step 5 — Store listing (`store-listings`)
+
+The `main-store-listing` path redirects on newer consoles. Open `…/app/<id>/store-listings`;
+a new app shows **Create default store listing**, which leads to
+`store-listings/default/edit`. Translations live on the same page.
 
 Default locale first, then each translation.
 
@@ -157,7 +173,7 @@ Save.
 
 ## Step 6 — What is left for the user
 
-Open the dashboard and expand **View tasks**. Report, and stop:
+Open the dashboard and expand **View tasks**. Report, and stop (`/play-store:release` takes it from here):
 
 - **Testers** — internal testing needs an email list; if the account has none, the user
   creates it. Do not create one.

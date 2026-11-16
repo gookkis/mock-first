@@ -24,7 +24,7 @@ Read `$ARGUMENTS`:
 | `--style <name>` | `bleed` (default), `clean`, `tilt`, or `plain`. Overrides `theme.yml`. |
 | `--screen <id>` | Only this screen. Repeatable. |
 | `--feature` | Only the feature graphic. |
-| `--tablet` | Use `raw-tablet/` and render at 2560x1440 landscape (10-inch) instead. |
+| `--tablet [7\|10]` | `10` (default for a bare `--tablet`): `raw-tablet/` → `out-tablet/` at 2560x1440 with `tablet.html`. `7`: `raw-tablet7/` → `out-tablet7/` at **1080x1920** with `tablet7.html`. Play accepts only 16:9 or 9:16 for screenshots — a 1200x1920 render (the 7" AVD's own size) is rejected. |
 | `--png` | Output 24-bit PNG instead of JPEG. |
 | `--dry-run` | Write the job file and the HTML for the first screen, open nothing, render nothing. |
 
@@ -253,6 +253,13 @@ listings that want the bare screen. Variables: `bg`, `shot`.
 </body></html>
 ```
 
+### `docs/store/_tools/templates/tablet7.html`
+
+1080x1920 portrait, same variables and headline block as `phone.html`. The 7" capture is
+wider than a phone (about 0.625), so the device frame is wider and bleeds off the bottom:
+`.device { left: 50%; top: 470px; width: 900px; height: 1440px; margin-left: -450px;
+border-radius: 64px; padding: 24px; }`, `.screen img { width: 100%; height: auto; }`.
+
 ### `docs/store/_tools/templates/tablet.html`
 
 2560x1440 landscape, headline on the left, framed screen on the right. Same variables as
@@ -272,8 +279,9 @@ width: 1000px; font-size: 96px; text-align: left`.
      "images": { "shot": "raw/id/01-home.png" } }
    ```
    Paths are relative to the job file, which is written to `docs/store/<app>/.jobs.json`.
-   Style `plain` uses `plain.html` with `bg` = `bg1`. `--tablet` uses `tablet.html` at
-   2560x1440 from `raw-tablet/`.
+   Style `plain` uses `plain.html` with `bg` = `bg1`. `--tablet 10` uses `tablet.html` at
+   2560x1440 from `raw-tablet/` into `out-tablet/`; `--tablet 7` uses `tablet7.html` at
+   1080x1920 from `raw-tablet7/` into `out-tablet7/`.
 2. Feature graphic (unless `--screen` limits the run): `feature.html`, 1024x500,
    `out/<locale>/featureGraphic.<ext>`, `shot` = the first screen's capture, `tagline` from
    the captions file (fallback `theme.yml`).
@@ -293,7 +301,8 @@ width: 1000px; font-size: 96px; text-align: left`.
    `out/<locale>/01-*.jpg ... 08-*.jpg` -> Phone screenshots, `featureGraphic` -> Feature
    graphic. Remind: the store accepts JPEG or 24-bit PNG without alpha, 320-3840 px per side; 2 phone
    screenshots is the publish minimum, 4 at 1080 px+ the threshold for Play's promotional
-   surfaces, and large-screen listings need at least 4 tablet shots (`--tablet`).
+   surfaces, and large-screen listings need at least 4 tablet shots (`--tablet 7` and `--tablet 10`), only
+   16:9 or 9:16.
 4. Next step: `/play-store:listing <app>` writes the text and copies these images into the
    fastlane folder.
 

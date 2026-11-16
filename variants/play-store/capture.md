@@ -29,7 +29,7 @@ Read `$ARGUMENTS`:
 | `--device <serial or AVD name>` | Which device to use. Default: the `device:` in `screens.yml`, else the first running device, else the first AVD. |
 | `--locale <xx>` | Capture in this language (`id`, `en`, ...). Default: every locale in `screens.yml`, or `en` if none. |
 | `--screen <id>` | Capture only this screen id. Repeatable. |
-| `--tablet` | Use the tablet profile (`tablet_device:` in `screens.yml`) and write into `raw-tablet/`. |
+| `--tablet [7\|10]` | Use a tablet profile and write into its own folder. `10` (default for a bare `--tablet`): `tablet_device:`, landscape, `raw-tablet/`. `7`: `tablet7_device:`, portrait, `raw-tablet7/`. Play requires both slots, even for a phone-only app. |
 | `--no-build` | Skip the Gradle build/install (the app is already on the device). |
 | `--variant <name>` | Gradle variant to install. Default `debug` -> task `install<Variant>`. |
 | `--keep-demo` | Leave the status bar in demo mode after finishing (default: restore it). |
@@ -117,7 +117,8 @@ ui_toolkit: compose             # compose | views | mixed   (from Step 2)
 navigation: ui                  # deeplink | activity | ui  (default for screens below)
 test_tags_as_resource_id: false # from Step 2; when false, never select by id/
 device: Pixel_7_API_34          # AVD name or serial; --device overrides
-tablet_device: Pixel_Tablet
+tablet_device: Pixel_Tablet     # 10" landscape, e.g. 2560x1600
+tablet7_device: Tablet_7        # 7" portrait, e.g. 1200x1920 (any 7" AVD)
 locales: [id, en]
 status_bar: demo                # demo = clean clock/battery/signal, off = leave as is
 disable_animations: true        # strongly recommended for Compose; see Step 4
@@ -256,7 +257,15 @@ swipes up in the largest node with `scrollable="true"` and re-dumps after each s
 
 ## Step 7 — Capture each screen
 
-Output folder: `docs/store/<app>/raw/<locale>/` (or `raw-tablet/<locale>/` with `--tablet`).
+Output folder: `docs/store/<app>/raw/<locale>/` (or `raw-tablet/<locale>/` with `--tablet 10`,
+`raw-tablet7/<locale>/` with `--tablet 7`).
+
+**Same history on every device.** Screens that show progress (stats, streaks, journals) must
+not be empty on the tablets. Either seed demo data the same way as on the phone (a debug-only
+intent extra is the most reliable), or copy the debug app's data from the phone AVD:
+`adb -s <phone> exec-out run-as <pkg> tar c databases files shared_prefs > app-data.tar`, then
+`adb -s <tablet> exec-in run-as <pkg> tar x < app-data.tar` before launching. Airplane mode
+keeps ads out of the frame.
 File name: `<NN>-<id>.png`, `NN` = two-digit position in `screens:`.
 
 For each screen (or only the `--screen` ids):

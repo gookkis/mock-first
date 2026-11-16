@@ -234,7 +234,16 @@ reach the release manifest, and with `--gdpr` attaches the app to the consent me
 `/play-store:console <app>` creates the app in Play Console and transcribes the listing and
 the App content answer sheet into it — declarations, content rating, data safety, store
 settings, and the listing text and graphics per locale — stopping before testers and the
-bundle upload, which stay yours.
+bundle upload. `/play-store:signing <app>` makes and verifies the app's upload key, and
+`/play-store:release <app>` — run on purpose — uploads the bundle, fills the release and
+sends it for review, then creates the in-app products. `/play-store:ship <app>` runs the
+whole store half in order.
+
+For a new app from scratch, `/android-factory:build-app "<brief>" --ref <app>` runs PRD →
+mockups → tasks → code → release smoke test in one pass, taking the recommended option at
+each gate and recording those decisions, and stops once for you to try the app.
+Shared settings (key folder, git org, support email, tester list) live in
+`~/.claude/mock-first/publisher.yml`.
 
 `portfolio@mock-first` ([`variants/portfolio/`](variants/portfolio/)) closes the loop: `/portfolio:publish <app>`
 turns that listing and those images into a portfolio entry on a personal Astro site (one
