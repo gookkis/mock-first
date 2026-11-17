@@ -62,8 +62,8 @@ comes with it:
 
 | Install | You get | Pulls in |
 | --- | --- | --- |
-| `android-factory@mock-first` | `/android-factory:*` — the module-scoped deltas, plus `new-app` and `docs` | `mock-first` |
-| `play-store@mock-first` | `/play-store:*` — screenshots, listing, ASO, AdMob and Play Console setup | `android-factory`, `mock-first` |
+| `android-factory@mock-first` | `/android-factory:*` — `build-app` (a new app in one pass), the module-scoped deltas, plus `new-app` and `docs` | `mock-first` |
+| `play-store@mock-first` | `/play-store:*` — signing, screenshots, listing, ASO, AdMob, Play Console setup, release, and `ship` to run them all | `android-factory`, `mock-first` |
 | `portfolio@mock-first` | `/portfolio:*` — site entry, privacy policy, staleness report | `play-store`, `android-factory`, `mock-first` |
 
 ```bash
@@ -132,6 +132,36 @@ rather than copying.
 
 The same walkthrough in full, with the actual output at each step:
 [docs/examples/walkthrough.md](docs/examples/walkthrough.md).
+
+Every command with its arguments and an example: [docs/COMMANDS.md](docs/COMMANDS.md).
+
+## Making a new Android app
+
+With `play-store@mock-first` (or `portfolio@mock-first`) installed:
+
+```bash
+# 1. Build: PRD → mockups → tasks → code → quality pass → release smoke test.
+#    Takes the recommended option at each gate and stops once, for you to try the app.
+/android-factory:build-app "Offline sourdough timer with feeding log" --ref <existing-app> --locales en,de
+
+# 2. Try it. Anything off → ask for the fix, or /mock-first:revise "<change>".
+
+# 3. Publish: signing → privacy page → AdMob → listing → phone/7"/10" captures
+#    → Console → release → in-app products. Stops only where you must act.
+/play-store:ship <app>
+```
+
+| Step | Command | Useful options |
+| --- | --- | --- |
+| Check the machine (once) | `/play-store:doctor` | `--fix` |
+| Build the app | `/android-factory:build-app "<brief>"` | `--ref <app>`, `--locales en,de`, `--name`, `--package`, `--in-factory app:<name>`, `--ask` |
+| Publish everything | `/play-store:ship <app>` | `--from <step>`, `--until <step>`, `--track internal\|closed` |
+| Redo one step | `/play-store:capture`, `enhance`, `listing`, `console`, `release` … | see [docs/COMMANDS.md](docs/COMMANDS.md) |
+
+On first use, `build-app` creates `~/.claude/mock-first/publisher.yml` with you (developer
+name, package prefix, key folder, git org, support email, tester list, and the
+`review_checklist` it checks before hand-off). If `ship` stops halfway, run it again: it
+resumes at the first step whose output is missing.
 
 ## One workflow, seven platforms
 

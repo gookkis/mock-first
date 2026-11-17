@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Docs
+
+- `docs/COMMANDS.md`: every command with an arguments table and examples.
+- README: "Making a new Android app" (`build-app` → try → `ship`), and the install table now
+  lists `build-app`, signing, release and `ship`.
+
 ## 0.6.0 — 2026-11-17
 
 ### Added
