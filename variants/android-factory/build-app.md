@@ -58,6 +58,9 @@ testers_list: Internal               # existing Play Console tester list
 autonomy: recommended                # recommended | ask
 monetisation: ads + one-time premium_lifetime, no subscription
 art: "how illustrations and icons are made (e.g. a local image-generation workflow)"
+review_checklist:                    # the owner's recurring revisions; applied in Step 6
+  - "UI reads as a paid, production app, not a template"
+  - "no emoji used as icons or decoration"
 ```
 
 ## Step 1 — Read the reference
@@ -121,15 +124,28 @@ code, one progress line. No waiting between tasks. A task that turns out wrong i
 
 ## Step 6 — Quality pass (the bar an owner review applies)
 
-Go through each screen on an emulator (phone, then a tablet AVD) and fix before hand-off:
+Go through each screen on an emulator (phone, then a tablet AVD) and fix before hand-off.
+Every line of `publisher.yml` `review_checklist` is checked here too — those are the
+corrections this owner made on earlier apps, so shipping one of them again wastes a review.
 
 - **Looks like a product, not a template:** no placeholder shapes or stock-looking sample
   images, icons consistent in one family, themed illustrations made the way `publisher.yml`
   `art:` says (fallback: a consistent icon set), motion only where it explains state.
+- **Icons:** the launcher icon shows what the app does in this domain at 48 px; never a
+  government emblem, agency name or anything that reads as official (Play's Impersonation
+  policy rejected one); bottom-bar and toolbar icons from one family with filled/outlined
+  selected states; no emoji standing in for icons; actions use the platform's standard
+  glyphs (retake, gallery, share) — a home-made one reads as a bug.
+- **Ads as specified:** every format the PRD lists is actually placed and seen on the
+  emulator (banner, interstitial at the agreed break, rewarded with its stated reward and
+  duration); a failed load retries with back-off; nothing interrupts a task mid-way.
 - **Every state:** loading, empty, error with retry, permission denied (and "don't ask
   again"), process death restore, dark theme, large font.
 - **Tablets:** content max width (~760dp) or a two-pane layout; nothing stretched edge to edge.
-- **Locales:** every string translated including defaults and sample data; numbers,
+- **Edge-to-edge:** `enableEdgeToEdge()` with insets handled; no deprecated
+  status/navigation-bar colour APIs (Play flags them on targetSdk 35+).
+- **Locales:** every string translated including defaults, sample data and bundled content
+  files (check each entry is actually in the target language, not just non-empty); numbers,
   decimals, dates and units formatted per locale; no text overflow in the longest language.
 - **Time-based logic:** default dates/plans never in the past; notifications actually fire
   for the first event (test it); exact alarms when allowed, a bounded window otherwise.

@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.6.0 — 2026-11-17
+
+### Added
+
+- `/play-store:enhance --vary`: per-screen layouts from a new `showcase.html` template —
+  `hero` (icon + name first), `bleed`, `float` (headline under the device), `tilt`, `clean`,
+  `zoom` (a callout magnifying a detail, `zoom: {x, y}` in the captions), `duo` (a second
+  screen behind, `pair:`), plus an optional `panorama` background running across the whole
+  set, a light-surface mode, a `chips` line and the app's own illustrations as side
+  decorations. Neighbouring screens never share a layout. New themes get `vary: true`.
+- `/play-store:enhance --variants 2|3` renders alternative sets A/B/C with a contact sheet
+  each (`contact.html`); `--pick` promotes one and records it in `theme.yml`.
+- `review_checklist` in `publisher.yml`: the owner's recurring revisions, checked by
+  `/android-factory:build-app` before hand-off.
+
+### Changed
+
+- `/android-factory:build-app` quality pass: icons (domain-specific launcher icon, no
+  official-looking emblems, one icon family, no emoji, standard action glyphs), ads placed
+  as the PRD says with retry, edge-to-edge without deprecated APIs, bundled content checked
+  for the right language.
+- Tablet templates alternate sides (`flip`) with `--vary`.
+
 ## 0.5.0 — 2026-11-17
 
 Lessons from a week of Play releases (two updates to live apps, three new apps),

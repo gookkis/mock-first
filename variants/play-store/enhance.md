@@ -21,7 +21,10 @@ Read `$ARGUMENTS`:
 |---|---|
 | `<app>` | Required. Same form as in `/play-store:capture`. |
 | `--locale <xx>` | Only this locale. Default: every locale that has a `raw/<locale>/index.json`. |
-| `--style <name>` | `bleed` (default), `clean`, `tilt`, or `plain`. Overrides `theme.yml`. |
+| `--style <name>` | `bleed` (default), `clean`, `tilt`, or `plain`. One style for the whole set. Overrides `theme.yml`. |
+| `--vary` | Vary the layout screen by screen (`showcase.html`): a hero first, then `bleed`, `float`, `tilt`, `clean`, `zoom` (callout on a detail), `duo` (two screens), optional `panorama` background running across the set. Default when `theme.yml` has `vary: true`, which new themes get. |
+| `--variants <2\|3>` | Render 2–3 alternative sets (A, B, C: different layout sequence, panorama on/off, light surface) side by side for the owner to choose, plus one contact sheet per set. |
+| `--pick <A\|B\|C>` | Promote one variant set into `out/<locale>/` and record it in `theme.yml` (`variant:`), so later runs reproduce it. |
 | `--screen <id>` | Only this screen. Repeatable. |
 | `--feature` | Only the feature graphic. |
 | `--tablet [7\|10]` | `10` (default for a bare `--tablet`): `raw-tablet/` → `out-tablet/` at 2560x1440 with `tablet.html`. `7`: `raw-tablet7/` → `out-tablet7/` at **1080x1920** with `tablet7.html`. Play accepts only 16:9 or 9:16 for screenshots — a 1200x1920 render (the 7" AVD's own size) is rejected. |
@@ -33,6 +36,9 @@ Read `$ARGUMENTS`:
 - **Never touch the raw captures.** Read from `raw/`, write to `out/`.
 - **Captions are content, not decoration.** Never invent a claim the app doesn't deliver.
   Every headline must describe something visible in that screenshot.
+- **No two neighbours look alike.** A set where every image is the same frame on the same
+  gradient reads as a template (the most common owner revision). With `--vary`, two adjacent
+  screens never share a layout and the first one is the hero.
 - **Keep the headline short**: at most 5 words in the `bleed`/`tilt` styles, 7 in `clean`.
   A store visitor reads it in one second on a phone thumbnail.
 - **Look at the output.** Open every rendered image with the Read tool. Overflowing text,
@@ -76,6 +82,14 @@ name: Tokoku
 tagline: Kelola toko dari genggaman     # feature graphic subtitle (per-locale override in captions)
 icon: tokoku/src/main/ic_launcher-playstore.png
 output: jpeg              # jpeg | png
+vary: true                # per-screen layouts from showcase.html (see Step 5)
+layouts: auto             # auto | a list per screen, e.g. [hero, bleed, zoom, float, duo, clean]
+panorama: false           # one background running across the whole set
+surface: "#F6F4EF"        # light-surface variant (variant C): background
+ink: "#14141A"            #   and text colour on it
+art:                      # optional decorations: the app's own illustrations (transparent PNG/WebP),
+  - tokoku/src/main/res/drawable-nodpi/art_box.webp   # never stock clip art the app doesn't use
+variant: A                # set by --pick
 ```
 
 ## Step 3 — Captions (`docs/store/<app>/captions.<locale>.yml`)
@@ -92,7 +106,13 @@ screens:
   home:     { headline: "Semua pesanan dalam satu layar", sub: "Pantau status tanpa buka-tutup aplikasi" }
   catalog:  { headline: "Katalog rapi, cari dalam sekejap" }
   checkout: { headline: "Checkout dua ketukan" }
+  stats:    { headline: "Tahu produk terlaris", layout: zoom, zoom: { x: 50%, y: 35% } }   # magnify a detail
+  orders:   { headline: "Dua layar, satu alur", layout: duo, pair: checkout }              # second screen behind
+  promo:    { headline: "Diskon otomatis", chips: "Tanpa login · Offline · Gratis" }       # one pill line
 ```
+
+`layout`, `zoom` (percent position of the detail inside the capture), `pair` (another
+screen id) and `chips` are optional and only read with `--vary`.
 
 A screen with no entry falls back to its `title:` from `screens.yml` and gets a warning in
 the report.
@@ -207,6 +227,111 @@ Variables: `style`, `font`, `bg1`, `bg2`, `text`, `accent`, `frame`, `headline`,
 </body></html>
 ```
 
+### `docs/store/_tools/templates/showcase.html`
+
+The varied phone template (`--vary`, `--variants`). Same 1080x1920 canvas and variables as
+`phone.html`, plus `layout` (`hero|bleed|float|tilt|clean|zoom|duo`), `extra` (`panorama`,
+`light`, or both, space separated), `idx` / `count` (position in the set, for the panorama),
+`zx` / `zy` (zoom focus, percent), `chips`, `name`, `surface`, `ink`, images `shot2`, `icon`,
+`art1`, `art2`. Empty images are hidden.
+
+```html
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family={{font}}:wght@500;800&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; }
+  body { position: relative; font-family: "{{font}}", "Segoe UI", Roboto, system-ui, sans-serif; color: {{text}};
+         background: linear-gradient(160deg, {{bg1}} 0%, {{bg2}} 100%); --idx: {{idx}}; --count: {{count}}; }
+  body.light { background: {{surface}}; color: {{ink}}; }
+  body.panorama { background: linear-gradient(100deg, {{bg1}} 0%, {{bg2}} 50%, {{bg1}} 100%);
+         background-size: calc(var(--count) * 1080px) 1920px; background-position: calc(var(--idx) * -1080px) 0; }
+  body.panorama .orb { display: block; }
+  .orb { display: none; position: absolute; top: 1180px; width: 440px; height: 440px; border-radius: 50%;
+         background: {{accent}}; opacity: .35; }
+  .orb.r { left: 860px; } .orb.l { left: -220px; }          /* halves meet across neighbouring images */
+  body::before { content: ""; position: absolute; inset: 0;
+         background: radial-gradient(900px 700px at 20% 0%, rgba(255,255,255,.16), transparent 60%); }
+  img[src=""] { display: none; }
+  /* decorations sit in the side margins beside the device, never under the headline */
+  .art { position: absolute; width: 220px; z-index: 0; filter: drop-shadow(0 18px 30px rgba(0,0,0,.25)); }
+  .art.a1 { top: 760px; left: -70px; transform: rotate(-12deg); }
+  .art.a2 { top: 1260px; right: -60px; transform: rotate(10deg); }
+  .brand { display: none; position: absolute; top: 120px; left: 0; right: 0; text-align: center; }
+  .brand img { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 16px 40px rgba(0,0,0,.3); }
+  .brand div { margin-top: 18px; font-size: 44px; font-weight: 800; letter-spacing: -.5px; }
+  .headline { position: absolute; top: 130px; left: 72px; right: 72px; height: 230px; text-align: center; z-index: 1;
+         font-size: 84px; font-weight: 800; line-height: 1.08; letter-spacing: -1.5px;
+         display: flex; align-items: flex-end; justify-content: center; }
+  .headline em { font-style: normal; box-shadow: inset 0 -18px 0 {{accent}}; }
+  .sub { position: absolute; top: 380px; left: 110px; right: 110px; height: 110px; text-align: center; z-index: 1;
+         font-size: 38px; font-weight: 500; line-height: 1.3; opacity: .88; }
+  .chips { position: absolute; top: 470px; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 1;
+         padding: 14px 30px; border-radius: 999px; background: rgba(255,255,255,.18); font-size: 30px; font-weight: 600; }
+  .light .chips { background: rgba(0,0,0,.06); }
+  .chips:empty { display: none; }
+  .device { position: absolute; left: 50%; background: {{frame}}; box-shadow: 0 60px 120px rgba(0,0,0,.45);
+         border-radius: 112px; padding: 20px; top: 540px; width: 860px; height: 1870px; margin-left: -430px; z-index: 2; }
+  .screen { width: 100%; height: 100%; border-radius: 92px; overflow: hidden; background: #000; }
+  .screen img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .device.back { display: none; }
+  .callout { display: none; position: absolute; top: 880px; right: 40px; width: 460px; height: 460px; border-radius: 50%;
+         border: 12px solid {{accent}}; box-shadow: 0 30px 80px rgba(0,0,0,.45); z-index: 3;
+         background-size: 260%; background-position: {{zx}} {{zy}}; background-repeat: no-repeat; }
+  /* layouts */
+  .tilt .device { top: 600px; transform: rotate(-7deg); }
+  .clean .device, .hero .device { top: 560px; width: 620px; height: 1348px; margin-left: -310px; border-radius: 84px; padding: 16px; }
+  .clean .screen, .hero .screen { border-radius: 68px; }
+  .hero .brand { display: block; }
+  .hero .headline { top: 360px; height: 170px; font-size: 72px; }
+  .hero .sub, .hero .chips { display: none; }
+  .hero .device { top: 620px; }
+  .float .device { top: 110px; width: 660px; height: 1430px; margin-left: -330px; border-radius: 88px; padding: 18px; }
+  .float .screen { border-radius: 72px; }
+  .float .headline { top: 1650px; height: 210px; align-items: flex-start; font-size: 72px; }
+  .float .sub, .float .chips { display: none; }
+  .duo .device { top: 620px; width: 640px; height: 1392px; margin-left: -150px; transform: rotate(5deg); border-radius: 86px; padding: 16px; }
+  .duo .device.back { display: block; margin-left: -500px; top: 700px; transform: rotate(-7deg); z-index: 1; opacity: .96; }
+  .duo .screen { border-radius: 70px; }
+  .zoom .callout { display: block; }
+</style></head>
+<body class="{{layout}} {{extra}}">
+  <div class="orb l"></div><div class="orb r"></div>
+  <img class="art a1" src="{{art1}}" alt=""><img class="art a2" src="{{art2}}" alt="">
+  <div class="brand"><img src="{{icon}}" alt=""><div>{{name}}</div></div>
+  <div class="headline" data-check="headline"><span>{{headline}}</span></div>
+  <div class="sub" data-check="sub">{{sub}}</div>
+  <div class="chips" data-check="chips">{{chips}}</div>
+  <div class="device back"><div class="screen"><img src="{{shot2}}" alt=""></div></div>
+  <div class="device"><div class="screen"><img src="{{shot}}" alt=""></div></div>
+  <div class="callout" style="background-image: url('{{shot}}')"></div>
+</body></html>
+```
+
+### `docs/store/_tools/templates/contact.html`
+
+One sheet per variant set so the owner compares sets at a glance: 2160x2040, up to eight
+images `s1`…`s8` in a 4x2 grid of 540x960 tiles under a 120px label bar (`label`, `font`).
+
+```html
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  html, body { margin: 0; width: 2160px; height: 2040px; overflow: hidden; background: #111; color: #fff;
+         font-family: "{{font}}", system-ui, sans-serif; }
+  .label { height: 120px; line-height: 120px; padding-left: 40px; font-size: 56px; font-weight: 800; }
+  .grid { display: grid; grid-template-columns: repeat(4, 540px); grid-auto-rows: 960px; }
+  .grid img { width: 540px; height: 960px; object-fit: cover; }
+  img[src=""] { visibility: hidden; }
+</style></head><body>
+  <div class="label">{{label}}</div>
+  <div class="grid"><img src="{{s1}}"><img src="{{s2}}"><img src="{{s3}}"><img src="{{s4}}">
+  <img src="{{s5}}"><img src="{{s6}}"><img src="{{s7}}"><img src="{{s8}}"></div>
+</body></html>
+```
+
+Templates are never overwritten, so a project made before `showcase.html` existed simply
+gains the two new files; its `phone.html` stays as it is.
+
 ### `docs/store/_tools/templates/plain.html`
 
 Undecorated: the capture fitted into 1080x1920 on a solid background, for stores or
@@ -263,7 +388,9 @@ border-radius: 64px; padding: 24px; }`, `.screen img { width: 100%; height: auto
 ### `docs/store/_tools/templates/tablet.html`
 
 2560x1440 landscape, headline on the left, framed screen on the right. Same variables as
-`phone.html`. Write it as a landscape adaptation of `phone.html`: `.device` 1100px wide by
+`phone.html`. With `--vary`, every other screen gets `class="flip"` on `body` (headline right,
+device left; mirror the two `left` values), and `tablet7.html` alternates the device between
+bleeding off the bottom and floating with the headline underneath. Write it as a landscape adaptation of `phone.html`: `.device` 1100px wide by
 1460px tall at `left: 1300px; top: 160px`, headline block at `left: 140px; top: 460px;
 width: 1000px; font-size: 96px; text-align: left`.
 
@@ -282,6 +409,20 @@ width: 1000px; font-size: 96px; text-align: left`.
    Style `plain` uses `plain.html` with `bg` = `bg1`. `--tablet 10` uses `tablet.html` at
    2560x1440 from `raw-tablet/` into `out-tablet/`; `--tablet 7` uses `tablet7.html` at
    1080x1920 from `raw-tablet7/` into `out-tablet7/`.
+   **With `--vary`** use `showcase.html` and assign layouts:
+   - `layouts:` a list → use it in order.
+   - `auto` → screen 1 `hero`; a screen whose caption has `zoom` → `zoom`, with `pair` →
+     `duo` (`shot2` = that screen's capture); the rest cycle `bleed, float, tilt, clean`,
+     skipping whatever the previous screen used. A caption's `layout:` always wins.
+   - `extra`: `panorama` when `theme.yml` says so; `idx` = 0-based position, `count` = set size.
+   - `art1`/`art2`: from `theme.yml` `art:`, rotating through the list, on at most every
+     other screen so the decoration doesn't become wallpaper.
+
+   **With `--variants N`** build N sets into `out/<locale>/variants/<A|B|C>/`:
+   A = `auto` on the theme gradient; B = the cycle started one step later and `panorama` on;
+   C = `extra: light` (`surface`/`ink`) with `clean`/`float` only. Then one `contact.html`
+   job per set → `out/<locale>/variants/contact-<X>.jpg`, label `<App> — set <X>`.
+   Nothing lands in `out/<locale>/` until `--pick`.
 2. Feature graphic (unless `--screen` limits the run): `feature.html`, 1024x500,
    `out/<locale>/featureGraphic.<ext>`, `shot` = the first screen's capture, `tagline` from
    the captions file (fallback `theme.yml`).
@@ -297,7 +438,9 @@ width: 1000px; font-size: 96px; text-align: left`.
    looks squashed. Fix and re-render as needed; don't report an image you haven't looked at.
 2. Write `docs/store/<app>/out/<locale>/index.json` listing the files in store order, the
    style, and the date.
-3. Report a table: screen id, headline, output file, status. Add the Play Console mapping:
+3. Report a table: screen id, layout, headline, output file, status. With `--variants`,
+   show the contact sheets (open each) and recommend one set with a one-line reason; with
+   the owner's standing "pick the recommended option", `--pick` it straight away. Add the Play Console mapping:
    `out/<locale>/01-*.jpg ... 08-*.jpg` -> Phone screenshots, `featureGraphic` -> Feature
    graphic. Remind: the store accepts JPEG or 24-bit PNG without alpha, 320-3840 px per side; 2 phone
    screenshots is the publish minimum, 4 at 1080 px+ the threshold for Play's promotional
