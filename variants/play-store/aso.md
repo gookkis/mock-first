@@ -16,7 +16,9 @@ risks, localization gaps, screenshot/caption coherence, and a side-by-side with 
 public listings (titles, short descriptions, keyword choices, screenshot count, rating,
 install band).
 
-**Cannot:** search volume or keyword difficulty. Those numbers exist only in paid tools
+**Cannot (alone):** search volume or keyword difficulty. `/play-store:keywords <app>` gives a free
+proxy — autocomplete demand plus top-10 odds after LazyASO's method — and this audit reads its latest
+report when present (check K7). Exact volume still lives only in paid tools
 (AppTweak, Sensor Tower, data.ai) and in your own Play Console under *Store performance ->
 Search terms*. Say this plainly in every report. If the user exports that Console table
 (CSV) and passes `--search-terms <file>`, use it to rank keywords by real traffic.
@@ -72,6 +74,7 @@ Score each check 0-2 (0 = fails, 1 = partial, 2 = passes). Print the evidence ne
 | K4 | Top keyword appears in the first 160 characters of the full description. |
 | K5 | Keywords are used inside sentences, not in a comma list or a "tags" line. |
 | K6 | With `--search-terms`: the five highest-impression terms are all covered somewhere in the listing. |
+| K7 | With a `keywords.*.md` report: the title starts with a **go** term, no **skip** term leads it, and the top three go terms appear in title + short description. |
 
 ### B — Budgets and structure
 | # | Check |

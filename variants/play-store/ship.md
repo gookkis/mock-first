@@ -16,7 +16,7 @@ the next), carries the state between them, and keeps going without asking — in
 | Argument | Meaning |
 |---|---|
 | `<app>` | Required. |
-| `--from <step>` | Resume at a step (`signing`, `privacy`, `admob`, `listing`, `capture`, `enhance`, `console`, `release`, `products`). Default: the first step whose output is missing. |
+| `--from <step>` | Resume at a step (`signing`, `privacy`, `admob`, `keywords`, `listing`, `capture`, `enhance`, `console`, `release`, `products`). Default: the first step whose output is missing. |
 | `--until <step>` | Stop after that step. |
 | `--track internal\|closed` | Passed to `/play-store:release`. Default `internal`. |
 | `--ask` | Normal behaviour: each sub-command asks where it would ask. |
@@ -43,6 +43,7 @@ the next), carries the state between them, and keeps going without asking — in
 | 1 | Upload key | `/play-store:signing <app>` | release AAB fingerprint = the app's key |
 | 2 | Privacy page + Data safety | `/portfolio:privacy <app>` → push the site → wait for the deploy | both locale URLs return **200** (with the trailing slash the app uses) and `data-safety.md` exists |
 | 3 | AdMob | `/play-store:admob <app> --gdpr` | real ids in the release manifest; app attached to the published consent message. Skip when the app has no ads |
+| 4a | Keywords | `/play-store:keywords <app> --names` | one report per shipped country; title drafted from go terms |
 | 4 | Listing + answer sheet | `/play-store:listing <app>` | fastlane text per locale within budget; `console.md`, `changelogs.txt` written |
 | 5 | Captures | `/play-store:capture <app>` then `--tablet 7` and `--tablet 10` | `raw/`, `raw-tablet7/`, `raw-tablet/` per locale, every image opened and checked |
 | 6 | Store graphics | `/play-store:enhance <app>` then `--tablet 7`, `--tablet 10`, `--feature` | `out/` 1080×1920, `out-tablet7/` 1080×1920, `out-tablet/` 2560×1440, feature 1024×500; captions match the screens; re-run `/play-store:listing` to copy them into fastlane |

@@ -90,7 +90,10 @@ Ask one at a time, at most six questions:
 2. The one thing it does better than the alternatives?
 3. Play category (e.g. Business, Shopping, Finance, Productivity) and up to five store tags?
 4. Three to five search terms a user would type to find it. These are the ASO keywords;
-   `/play-store:aso` reuses them.
+   `/play-store:aso` reuses them. **If `docs/store/<app>/keywords.*.md` exists, don't ask:** take
+   the go terms from the latest report per country (highest score first) and its drafted title,
+   and use its long-tail terms in the full description. Without one, suggest running
+   `/play-store:keywords <app>` first — a title word nobody can rank for is wasted.
 5. Anything that must be mentioned (login required, subscription, region-only, needs a
    companion device) or must not be mentioned?
 6. Tone: neutral, friendly, or formal?
@@ -102,7 +105,8 @@ approval before writing files.
 
 **Title (≤30):** `<App name>` or `<App name>: <2-3 word descriptor>` when the name alone
 doesn't say what the app does. The descriptor carries the top keyword. No punctuation
-tricks, no repeated brand.
+tricks, no repeated brand. With a keywords report, the title **starts** with its top go term
+(LazyASO: ×2–3) and never with a skip term or a competitor's brand.
 
 **Short description (≤80):** one sentence, the main benefit plus the top two keywords,
 readable on its own; it shows above the fold on the store page.

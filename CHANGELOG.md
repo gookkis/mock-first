@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- `/play-store:keywords <app>`: keyword odds for Google Play after LazyASO's App Store method —
+  autocomplete demand, the top-10 holders of each search, a top-10 chance from LazyASO's published
+  multipliers and a go / maybe / skip / long-tail call; `--expand` seeds candidates from
+  autocomplete, `--names` drafts titles. `/play-store:listing` takes its go terms, `/play-store:aso`
+  checks them (K7), `/play-store:ship` runs it as step 4a.
+
 ### Docs
 
 - `docs/COMMANDS.md`: every command with an arguments table and examples.

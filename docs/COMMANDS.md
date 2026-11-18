@@ -8,7 +8,7 @@ page is the quick lookup.
 | --- | --- |
 | [`mock-first`](#mock-first--any-platform) | `prd` · `mockup` · `break-task` · `coding` · `revise` · `review` · `adopt` |
 | [`android-factory`](#android-factory--android-apps-and-multi-module-projects) | `build-app` · `new-app` · `adopt` · `docs` · `prd` · `break-task` · `coding` · `revise` |
-| [`play-store`](#play-store--from-screenshots-to-a-release) | `doctor` · `ship` · `signing` · `admob` · `capture` · `enhance` · `listing` · `aso` · `console` · `release` |
+| [`play-store`](#play-store--from-screenshots-to-a-release) | `doctor` · `ship` · `signing` · `admob` · `capture` · `enhance` · `keywords` · `listing` · `aso` · `console` · `release` |
 | [`portfolio`](#portfolio--the-site-entry-and-privacy-page) | `publish` · `privacy` · `sync` |
 
 `<app>` in the Android commands is a Gradle path (`:apps:tokoku`) or a module name (`tokoku`).
@@ -344,6 +344,24 @@ sheet (rating, privacy, data safety, declarations).
 ```bash
 /play-store:listing sourdough --locale en,de
 /play-store:listing sourdough --notes
+```
+
+### `/play-store:keywords`
+
+Which searches can a new app win? Demand from autocomplete, the ten holders of each search, top-10
+odds from LazyASO's multipliers, and a go / maybe / skip / long-tail call. Writes one report per
+country; the listing reads the latest.
+
+| Argument | Meaning |
+| --- | --- |
+| `<app>` | Required. |
+| `--terms <a,b,c>` | Candidate searches. Default: seeds from the PRD and competitors, expanded by autocomplete. |
+| `--country <US,GB,...>` | One report per country. Default: the countries of the app's locales. |
+| `--names` | Draft three titles and short descriptions from the go terms. |
+
+```bash
+/play-store:keywords sky-map --names
+/play-store:keywords aurora --country US,GB,CA
 ```
 
 ### `/play-store:aso`
