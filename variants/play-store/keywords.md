@@ -54,6 +54,9 @@ Say this in every report.
 
 If `docs/store/_tools/aso_odds.py` is missing, write it exactly as below (Python 3 standard library only, no
 install). Run it with `python3 -I`.
+If it exists but has no `>Downloads<` anchor in `details()`, it is a pre-0.7.1 copy: replace it with this
+version (the old one read the age rating "3+" as installs in some countries and matched non-English
+searches against the English title).
 
 ```python
 #!/usr/bin/env python3
@@ -147,7 +150,8 @@ def details(app_id):
     # Parsed with English labels ("reviews", "Updated on"), so details are always fetched in English.
     s = get(f"https://play.google.com/store/apps/details?id={app_id}&hl=en_US&gl={GL}")
     title = html.unescape(re.search(r"<title[^>]*>(.*?)</title>", s).group(1)).replace(" - Apps on Google Play", "")
-    inst = re.search(r"([\d,.]+[KMB]?\+)\s*<", s)
+    # Anchor on the "Downloads" label: in some countries "Rated for 3+" comes first.
+    inst = re.search(r">([\d,.]+[KMB]?\+)</div><div[^>]*>Downloads<", s) or re.search(r"([\d,.]+[KMB]?\+)\s*<", s)
     rev = re.search(r"([\d,.]+[KM]?) reviews", s)
     rate = re.search(r'aria-label="Rated ([\d.]+)', s)
     upd = re.search(r"Updated on</div><div[^>]*>([^<]+)", s)
@@ -163,6 +167,14 @@ def details(app_id):
         d["age_days"] = (datetime.now() - datetime.strptime(d["updated"], "%b %d, %Y")).days
     except ValueError:
         d["age_days"] = None
+    if HL != "en":
+        # Users see (and Play matches) the localized title, so "name starts with term" must use it.
+        time.sleep(0.4)
+        loc = get(f"https://play.google.com/store/apps/details?id={app_id}&hl={HL}&gl={GL}")
+        m = re.search(r"<title[^>]*>(.*?)</title>", loc)
+        if m:
+            # Drop the store suffix (" - Aplikasi di Google Play", " – Appar på Google Play", ...).
+            d["title"] = re.split(r" [-–] (?=[^-–]*$)", html.unescape(m.group(1)))[0]
     CACHE[app_id] = d
     time.sleep(0.4)
     return d
@@ -275,6 +287,9 @@ if __name__ == "__main__":
    Keep the suggestions that describe **this** app; drop brands, other apps' names and unrelated meanings
    ("aurora loan app").
 3. Add the `--terms` given. Write the list as a terms file, one per line, under a `# <App name>` header.
+4. Write terms the way people type them in that language: Japanese without spaces (`pdf圧縮`, not
+   `pdf 圧縮`); Korean and Traditional Chinese with spaces (`pdf 압축`, `pdf 壓縮`). Autocomplete and the
+   title match are literal, so a wrongly spaced term reads as zero demand.
 
 ## Step 2 — Odds
 

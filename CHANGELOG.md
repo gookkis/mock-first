@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.1 — 2026-11-19
+
+### Fixed
+
+- `/play-store:keywords` (`aso_odds.py`): installs are read from the "Downloads" label (in some
+  countries "Rated for 3+" came first and was read as 3+ installs); with `--hl` other than `en` the
+  title match uses the app's localized title, with the store suffix cut at the last hyphen or en dash
+  ("– Appar på Google Play"). An older copy in `docs/store/_tools/` is replaced.
+- Step 1 notes how to space terms in Japanese (none), Korean and Traditional Chinese (spaces).
+
 ## 0.7.0 — 2026-11-18
 
 ### Added
