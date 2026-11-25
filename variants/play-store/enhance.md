@@ -139,9 +139,10 @@ strip:
 ```
 
 `top` is the plain line (2-3 words), `pill` the keyword in the sticker (1-2 words) - together at most
-5 words, the keyword being the one the store visitor should remember. `\n` in `title` or `top` forces a
-line break (the hero title then shrinks until its longest line fits): use it for CJK and Thai, which
-otherwise break inside a word. Prefer `stats` (up to three number cards: big value in the accent colour, short label) over `badges`
+5 words, the keyword being the one the store visitor should remember. A hero `title` with `\n` keeps
+exactly those lines (no wrapping) and the font shrinks until the longest one fits, so write short lines
+(about 8-12 Latin characters, 4-6 CJK) - long lines come out small. Without `\n` the title wraps freely.
+`\n` in `top` is a plain line break. Always break CJK and Thai titles yourself. Prefer `stats` (up to three number cards: big value in the accent colour, short label) over `badges`
 (laurels): laurels read as awards, so plain facts inside them look borrowed and the small text
 doesn't sell. Use numbers the app guarantees (format, time limit, scale) - never a content count that
 grows with downloads or updates, it goes stale on the first new pack. `note` is a short pill under the
@@ -479,7 +480,7 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
       const head = el('div', 'head'); panel.appendChild(head);
       const t = el('div', 'title', p.title); t.dataset.check = 'hero-title'; head.appendChild(t);
       // A title written with \n keeps its lines; the font shrinks until the longest line fits.
-      if (p.title.includes('\n')) t.style.whiteSpace = 'pre-line';
+      if (p.title.includes('\n')) t.style.whiteSpace = 'pre';   // keep the author's lines; the shrink loop below makes the longest fit
       t._fit = true;
       if (p.note) { const n = el('div', 'note', p.note); n.dataset.check = 'note'; head.appendChild(n); }
       if (p.stats) {

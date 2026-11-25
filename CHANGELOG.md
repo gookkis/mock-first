@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.2 — 2026-11-25
+
+### Fixed
+
+- `--style strip` hero: a title written with `\n` keeps its lines (`white-space: pre`) and shrinks to fit,
+  instead of re-wrapping each line and leaving orphan words (reported on ~40 app runs).
+
 ## 0.8.1 — 2026-11-25
 
 ### Changed
