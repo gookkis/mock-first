@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.1 — 2026-11-25
+
+### Changed
+
+- `--style strip` hero: `stats` (number cards) and `note` (pill under the title) next to `badges`;
+  laurels are discouraged (they read as awards). Stat values never bidi-flip in RTL, labels wrap under
+  long values, the title shrinks with the note in view. Guidance: no content counts that grow.
+
 ## 0.8.0 — 2026-11-25
 
 ### Added

@@ -47,8 +47,8 @@ Read `$ARGUMENTS`:
   caption or the template and re-render.
 - Never run `npm install` or `npx playwright install` from here. If Playwright is missing,
   say so and point to `/play-store:doctor --fix`.
-- **Badges are facts, never awards.** The `strip` hero's laurels carry things the app verifiably
-  is ("165 questions", "Offline, no account", "10 languages") - never "#1", "Editors' Choice",
+- **Badges are facts, never awards.** The `strip` hero's stats, note and laurels carry things the app
+  verifiably is ("140 questions, 115 minutes", "Offline, no account", "10 languages") - never "#1", "Editors' Choice",
   "5 star rating", download counts or press quotes the app has not earned. Play's metadata policy
   treats unearned rankings and awards in store graphics as misleading.
 - Run `date +%Y-%m-%d` for the date.
@@ -130,7 +130,8 @@ screen id) and `chips` are optional and only read with `--vary`.
 
 ```yaml
 strip:
-  hero: { title: "ITP English test practice", badges: ["165 questions", "Offline, no account"] }
+  hero: { title: "Full ITP English\ntest simulation", note: "New packs added",
+          stats: [{ v: "140", l: "questions" }, { v: "115", l: "minutes" }, { v: "310–677", l: "score scale" }] }
   screens:
     home:     { top: "Full simulation", pill: "115 minutes" }   # 1st screen: the device shared with the hero
     result:   { top: "Your score", pill: "by section" }
@@ -140,7 +141,11 @@ strip:
 `top` is the plain line (2-3 words), `pill` the keyword in the sticker (1-2 words) - together at most
 5 words, the keyword being the one the store visitor should remember. `\n` in `title` or `top` forces a
 line break (the hero title then shrinks until its longest line fits): use it for CJK and Thai, which
-otherwise break inside a word. Two badges, each at most ~20 characters. Use `fit: true` wherever the
+otherwise break inside a word. Prefer `stats` (up to three number cards: big value in the accent colour, short label) over `badges`
+(laurels): laurels read as awards, so plain facts inside them look borrowed and the small text
+doesn't sell. Use numbers the app guarantees (format, time limit, scale) - never a content count that
+grows with downloads or updates, it goes stale on the first new pack. `note` is a short pill under the
+title (≤ ~22 characters, it must not reach the device). `badges` still works: two, ≤ ~20 characters. Use `fit: true` wherever the
 thing the caption names is in the lower third of the capture - the bleeding device crops it.
 
 A screen with no entry falls back to its `title:` from `screens.yml` and gets a warning in
@@ -362,7 +367,8 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
   image and a device can straddle two images (the "span" look of the paid generators).
 
   Panels come from the data-panels attribute (JSON, HTML-escaped by render.mjs):
-    [{ "kind": "hero",  "title": "...", "badges": ["165 questions", "Offline"], "icon": true },
+    [{ "kind": "hero",  "title": "...", "note": "New packs added", "stats": [{"v": "140", "l": "questions"}],
+       "badges": ["..."], "icon": true },   // stats (number cards) or badges (laurels), note = pill under title
      { "kind": "span",  "top": "...", "pill": "...", "shot": "shot0" },      // device shared with the panel before
      { "kind": "phone", "top": "...", "pill": "...", "shot": "shot1", "tilt": 0, "fit": false },
      ...]
@@ -406,15 +412,27 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
   .hero .brand { position: absolute; top: 120px; left: 80px; display: flex; align-items: center; gap: 26px;
          font-size: 54px; font-weight: 900; letter-spacing: -1px; }
   .hero .brand img { width: 120px; height: 120px; border-radius: 30px; box-shadow: 0 14px 36px rgba(0,0,0,.3); }
-  .hero .title { position: absolute; top: 300px; left: 80px; width: 560px; height: 820px; z-index: 5;
+  .hero .head { position: absolute; top: 300px; left: 80px; width: 520px; z-index: 5; display: flex; flex-direction: column; align-items: flex-start; gap: 40px; }
+  .hero .title { width: 520px;
          font-size: 112px; font-weight: 900; font-style: {{herostyle}}; line-height: .98; letter-spacing: -3px;
-         text-wrap: balance; text-shadow: 0 8px 30px rgba(0,0,0,.25); white-space: pre-line; }  /* \n in the title = line break */
+         text-wrap: balance; text-shadow: 0 8px 30px rgba(0,0,0,.25); white-space: pre-line; word-break: keep-all; }  /* \n in the title = line break */
   .hero .badges { position: absolute; left: 60px; bottom: 120px; width: 600px; z-index: 5;
          display: flex; flex-direction: column; gap: 34px; align-items: flex-start; }
   .badge { display: flex; align-items: center; gap: 6px; }
   .badge svg { width: 70px; height: 150px; flex: none; }
   .badge svg.r { transform: scaleX(-1); }
   .badge span { font-size: 50px; font-weight: 900; line-height: 1.05; text-align: center; max-width: 400px; }
+  /* stats: big number + small label, the honest alternative to award laurels */
+  .hero .stats { position: absolute; left: 80px; bottom: 110px; width: 520px; z-index: 5; display: flex; flex-direction: column; gap: 22px; }
+  .stat { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 22px; row-gap: 4px; padding: 22px 34px; border-radius: 36px;
+         background: rgba(255,255,255,.13); box-shadow: inset 0 0 0 3px rgba(255,255,255,.22); }
+  .stat b { font-size: 92px; font-weight: 900; line-height: 1; letter-spacing: -2px; color: var(--accent); white-space: nowrap; direction: ltr; unicode-bidi: isolate; }
+  .stat span { font-size: 40px; font-weight: 800; line-height: 1.1; }
+  .hero .note { display: inline-block; font-size: 40px; font-weight: 800; padding: 10px 30px 14px;
+         border-radius: 999px; background: var(--pill); color: var(--pillink); transform: rotate(-2deg);
+         box-shadow: 8px 9px 0 var(--accent); white-space: nowrap; }
+  [dir="rtl"] .hero .stats { left: auto; right: 80px; }
+  [dir="rtl"] .hero .head { left: auto; right: 80px; align-items: flex-end; }
   [dir="rtl"] .hero .title, [dir="rtl"] .hero .badges, [dir="rtl"] .hero .brand { left: auto; right: 80px; }
 </style></head>
 <body lang="{{lang}}" dir="{{dir}}" data-panels="{{panels}}">
@@ -458,10 +476,17 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
       if (p.icon && src('icon')) { const ic = el('img'); ic.src = src('icon'); brand.appendChild(ic); }
       brand.appendChild(el('span', '', p.name || ''));
       panel.appendChild(brand);
-      const t = el('div', 'title', p.title); t.dataset.check = 'hero-title'; panel.appendChild(t);
+      const head = el('div', 'head'); panel.appendChild(head);
+      const t = el('div', 'title', p.title); t.dataset.check = 'hero-title'; head.appendChild(t);
       // A title written with \n keeps its lines; the font shrinks until the longest line fits.
-      if (p.title.includes('\n')) t.style.whiteSpace = 'pre';
+      if (p.title.includes('\n')) t.style.whiteSpace = 'pre-line';
       t._fit = true;
+      if (p.note) { const n = el('div', 'note', p.note); n.dataset.check = 'note'; head.appendChild(n); }
+      if (p.stats) {
+        const st = el('div', 'stats');
+        p.stats.forEach(x => { const r = el('div', 'stat'); r.appendChild(el('b', '', x.v)); r.appendChild(el('span', '', x.l)); st.appendChild(r); });
+        panel.appendChild(st);
+      }
       const bs = el('div', 'badges');
       (p.badges || []).forEach(text => {
         const b = el('div', 'badge'); b.innerHTML = laurel(false); const s = el('span', '', text); s.dataset.check = 'badge'; b.appendChild(s);
@@ -487,8 +512,10 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
   // shrink-to-fit pass for hero titles (after layout, once fonts are in)
   document.fonts.ready.then(() => document.querySelectorAll('.title').forEach(t => {
     let size = parseFloat(getComputedStyle(t).fontSize);
-    const room = t.parentElement.querySelector('.badges').getBoundingClientRect().top - 40;
-    while (size > 64 && (t.scrollWidth > t.clientWidth + 2 || t.getBoundingClientRect().top + t.scrollHeight > room)) {
+    const hero = t.closest('.panel'), head = t.parentElement;
+    const below = hero.querySelector('.stats') || hero.querySelector('.badges');
+    const room = below.getBoundingClientRect().top - 40;
+    while (size > 64 && (t.scrollWidth > t.clientWidth + 2 || head.getBoundingClientRect().bottom > room)) {
       size -= 4; t.style.fontSize = size + 'px';
     }
   }));
@@ -511,7 +538,8 @@ Reads theme.yml (bg1/bg2/bg3, text, accent, frame, ring, pill, pillink, font, na
 captions.<locale>.yml `strip:` block:
 
     strip:
-      hero: { title: "ITP English test practice", badges: ["165 questions", "Offline, no account"] }
+      hero: { title: "Full ITP English\ntest simulation", note: "New packs added",
+          stats: [{ v: "140", l: "questions" }, { v: "115", l: "minutes" }, { v: "310–677", l: "score scale" }] }
       screens:
         home:   { top: "Full simulation", pill: "115 minutes" }   # first screen shares the hero's device
         result: { top: "Your score", pill: "by section" }
