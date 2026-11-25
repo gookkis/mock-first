@@ -22,7 +22,8 @@ Read `$ARGUMENTS`:
 | `<app>` | Required. Same form as in `/play-store:capture`. |
 | `--locale <xx>` | Only this locale. Default: every locale that has a `raw/<locale>/index.json`. |
 | `--style <name>` | `bleed` (default), `clean`, `tilt`, `plain`, or `strip`. One style for the whole set. Overrides `theme.yml`. |
-| `--style strip` | The look of the paid generators (AppLaunchpad and the like): the whole set drawn as **one wide canvas** and cut into 1080x1920 images, so the gradient runs on from image to image; a **hero** first (big title, app icon, laurel fact badges) whose tilted device **straddles images 1 and 2**; every caption a heavy plain line plus the keyword in a tilted white **sticker pill** with a hard accent shadow; big devices with a thin bright ring, bleeding off the bottom (`fit: true` shows the whole device). One extra image (the hero), so at most 7 captures. RTL locales are mirrored (Play's carousel runs right-to-left there). |
+| `--style strip` | The look of the paid generators (AppLaunchpad and the like): the whole set drawn as **one wide canvas** and cut into 1080x1920 images, so the gradient runs on from image to image; a **hero** first (big title, app icon, laurel fact badges) whose tilted device **straddles images 1 and 2**; every caption a heavy plain line plus the keyword in a tilted white **sticker pill** with a hard accent shadow; big devices with a thin bright ring, bleeding off the bottom (`fit: true` shows the whole device). One extra image (the hero), so at most 7 captures. Play orders screenshots by file name and the output names follow the capture file names, so
+number the captures in strip order (the first one is the device shared with the hero). RTL locales are mirrored (Play's carousel runs right-to-left there). |
 | `--vary` | Vary the layout screen by screen (`showcase.html`): a hero first, then `bleed`, `float`, `tilt`, `clean`, `zoom` (callout on a detail), `duo` (two screens), optional `panorama` background running across the set. Default when `theme.yml` has `vary: true`, which new themes get. |
 | `--variants <2\|3>` | Render 2–3 alternative sets (A, B, C: different layout sequence, panorama on/off, light surface) side by side for the owner to choose, plus one contact sheet per set. |
 | `--pick <A\|B\|C>` | Promote one variant set into `out/<locale>/` and record it in `theme.yml` (`variant:`), so later runs reproduce it. |
@@ -102,6 +103,7 @@ ring: "#5EEAD4"           # thin ring around the device bezel [white 35%]
 pill: "#FFFFFF"           # keyword sticker [#FFFFFF]
 pillink: "#0B1F1D"        # text on the sticker [#111111]
 hero_style: normal        # normal | italic (the hero title) [normal]
+shot_ratio: 2.2222        # capture height / width: 2400/1080 phones [default]; 1.7778 for 1080x1920 captures
 ```
 
 ## Step 3 — Captions (`docs/store/<app>/captions.<locale>.yml`)
@@ -436,7 +438,7 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
   [dir="rtl"] .hero .head { left: auto; right: 80px; align-items: flex-end; }
   [dir="rtl"] .hero .title, [dir="rtl"] .hero .badges, [dir="rtl"] .hero .brand { left: auto; right: 80px; }
 </style></head>
-<body lang="{{lang}}" dir="{{dir}}" data-panels="{{panels}}">
+<body lang="{{lang}}" dir="{{dir}}" data-panels="{{panels}}" data-ratio="{{ratio}}">
   <img class="src" id="shot0" src="{{shot0}}"><img class="src" id="shot1" src="{{shot1}}">
   <img class="src" id="shot2" src="{{shot2}}"><img class="src" id="shot3" src="{{shot3}}">
   <img class="src" id="shot4" src="{{shot4}}"><img class="src" id="shot5" src="{{shot5}}">
@@ -444,6 +446,8 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
   <img class="src" id="icon" src="{{icon}}">
 <script>
   const W = 1080, H = 1920;
+  // capture height / width (theme shot_ratio); 20:9 phones by default, 16:9 for 1080x1920 captures
+  const RATIO = parseFloat(document.body.dataset.ratio) || 2400 / 1080;
   const panels = JSON.parse(document.body.dataset.panels);
   document.body.style.width = (panels.length * W) + 'px';
   const src = id => (document.getElementById(id) || {}).src || '';
@@ -460,7 +464,7 @@ the display font), `panels`; images `shot0`…`shot7`, `icon`.
 
   const device = (left, top, width, rot, shot) => {
     const d = el('div', 'device');
-    Object.assign(d.style, { left: left + 'px', top: top + 'px', width: width + 'px', height: Math.round(width * 2400 / 1080 * 0.985) + 'px', transform: `rotate(${rot}deg)` });
+    Object.assign(d.style, { left: left + 'px', top: top + 'px', width: width + 'px', height: Math.round(width * RATIO * 0.985) + 'px', transform: `rotate(${rot}deg)` });
     const s = el('div', 'screen'); s.appendChild(el('div', 'punch'));
     const im = el('img'); im.src = src(shot); s.appendChild(im); d.appendChild(s);
     document.body.appendChild(d);
@@ -535,7 +539,8 @@ Builds the strip job (one per locale) from `theme.yml`, `captions.<locale>.yml` 
 
     python3 strip_jobs.py docs/store/<app> [locale ...] > docs/store/<app>/.jobs-strip.json
 
-Reads theme.yml (bg1/bg2/bg3, text, accent, frame, ring, pill, pillink, font, name, icon) and each
+Reads theme.yml (bg1/bg2/bg3, text, accent, frame, ring, pill, pillink, font, name, icon, shot_ratio = capture
+height/width, default 2400/1080) and each
 captions.<locale>.yml `strip:` block:
 
     strip:
@@ -593,7 +598,7 @@ def main(app_dir, locales):
                 "bg1": theme["bg1"], "bg2": theme["bg2"], "bg3": theme.get("bg3", theme["bg2"]),
                 "text": theme.get("text", "#FFFFFF"), "accent": theme["accent"], "frame": theme.get("frame", "#0B0B0F"),
                 "ring": theme.get("ring", "rgba(255,255,255,.35)"), "pill": theme.get("pill", "#FFFFFF"),
-                "pillink": theme.get("pillink", "#111111"), "herostyle": theme.get("hero_style", "normal"),
+                "pillink": theme.get("pillink", "#111111"), "ratio": str(theme.get("shot_ratio", 2400 / 1080)), "herostyle": theme.get("hero_style", "normal"),
                 "lang": loc, "dir": "rtl" if loc in RTL else "ltr", "cjk": CJK.get(loc, "JP"),
                 "panels": json.dumps(panels, ensure_ascii=False),
             },

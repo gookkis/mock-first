@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.3 — 2026-11-25
+
+### Added
+
+- `--style strip`: `shot_ratio` in theme.yml for captures that are not 20:9 (e.g. 1080x1920), so the
+  device frame matches and nothing is cropped; note that capture file names set the Play order.
+
 ## 0.8.2 — 2026-11-25
 
 ### Fixed

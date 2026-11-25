@@ -1,6 +1,6 @@
 {
   "name": "play-store",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Take one Android app module from upload key to Send for review: signing, AdMob, captures for phone and 7\"/10\" tablets, framed screenshots, per-locale copy, Play Console setup, release and in-app products, ASO audit. /play-store:ship runs it in order.",
   "author": {
     "name": "Heri Kiswanto",
