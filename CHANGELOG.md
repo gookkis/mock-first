@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.0 — 2026-11-25
+
+### Added
+
+- `/play-store:enhance --style strip`: the look of the paid screenshot generators. The whole set is
+  one wide canvas (`templates/strip.html`) cut into 1080x1920 images (`render.mjs` gained `parts`), so
+  the gradient runs on across images; a hero first (big title, icon, laurel fact badges) whose tilted
+  device straddles images 1 and 2; captions as a heavy line plus the keyword in a tilted white sticker
+  with a hard accent shadow; `fit: true` for screens whose point sits low; RTL locales mirrored.
+  Jobs come from `strip_jobs.py` and a `strip:` block in `captions.<locale>.yml`. New rule: badges
+  are facts, never awards or ratings the app has not earned.
+
 ## 0.7.1 — 2026-11-19
 
 ### Fixed

@@ -1,6 +1,6 @@
 ---
 description: Turn raw captures into Play Store marketing screenshots (frame, background, caption) and the feature graphic
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(date*), Bash(mkdir*), Bash(ls*), Bash(cat*), Bash(node*), Bash(npx*), Bash(npm*), Bash(test*), Bash(cp*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(date*), Bash(mkdir*), Bash(ls*), Bash(cat*), Bash(node*), Bash(npx*), Bash(npm*), Bash(test*), Bash(cp*), Bash(python3*)
 ---
 
 # Enhance — store-ready images from raw captures
@@ -21,7 +21,8 @@ Read `$ARGUMENTS`:
 |---|---|
 | `<app>` | Required. Same form as in `/play-store:capture`. |
 | `--locale <xx>` | Only this locale. Default: every locale that has a `raw/<locale>/index.json`. |
-| `--style <name>` | `bleed` (default), `clean`, `tilt`, or `plain`. One style for the whole set. Overrides `theme.yml`. |
+| `--style <name>` | `bleed` (default), `clean`, `tilt`, `plain`, or `strip`. One style for the whole set. Overrides `theme.yml`. |
+| `--style strip` | The look of the paid generators (AppLaunchpad and the like): the whole set drawn as **one wide canvas** and cut into 1080x1920 images, so the gradient runs on from image to image; a **hero** first (big title, app icon, laurel fact badges) whose tilted device **straddles images 1 and 2**; every caption a heavy plain line plus the keyword in a tilted white **sticker pill** with a hard accent shadow; big devices with a thin bright ring, bleeding off the bottom (`fit: true` shows the whole device). One extra image (the hero), so at most 7 captures. RTL locales are mirrored (Play's carousel runs right-to-left there). |
 | `--vary` | Vary the layout screen by screen (`showcase.html`): a hero first, then `bleed`, `float`, `tilt`, `clean`, `zoom` (callout on a detail), `duo` (two screens), optional `panorama` background running across the set. Default when `theme.yml` has `vary: true`, which new themes get. |
 | `--variants <2\|3>` | Render 2–3 alternative sets (A, B, C: different layout sequence, panorama on/off, light surface) side by side for the owner to choose, plus one contact sheet per set. |
 | `--pick <A\|B\|C>` | Promote one variant set into `out/<locale>/` and record it in `theme.yml` (`variant:`), so later runs reproduce it. |
@@ -46,6 +47,10 @@ Read `$ARGUMENTS`:
   caption or the template and re-render.
 - Never run `npm install` or `npx playwright install` from here. If Playwright is missing,
   say so and point to `/play-store:doctor --fix`.
+- **Badges are facts, never awards.** The `strip` hero's laurels carry things the app verifiably
+  is ("165 questions", "Offline, no account", "10 languages") - never "#1", "Editors' Choice",
+  "5 star rating", download counts or press quotes the app has not earned. Play's metadata policy
+  treats unearned rankings and awards in store graphics as misleading.
 - Run `date +%Y-%m-%d` for the date.
 
 ## Step 1 — Inputs
@@ -90,6 +95,13 @@ ink: "#14141A"            #   and text colour on it
 art:                      # optional decorations: the app's own illustrations (transparent PNG/WebP),
   - tokoku/src/main/res/drawable-nodpi/art_box.webp   # never stock clip art the app doesn't use
 variant: A                # set by --pick
+# --- style: strip (optional keys; defaults in brackets)
+strip_font: Archivo       # heavy display face with a 900 weight [font]
+bg3: "#14B8A6"            # brightest stop in the middle of the strip [bg2]
+ring: "#5EEAD4"           # thin ring around the device bezel [white 35%]
+pill: "#FFFFFF"           # keyword sticker [#FFFFFF]
+pillink: "#0B1F1D"        # text on the sticker [#111111]
+hero_style: normal        # normal | italic (the hero title) [normal]
 ```
 
 ## Step 3 — Captions (`docs/store/<app>/captions.<locale>.yml`)
@@ -113,6 +125,23 @@ screens:
 
 `layout`, `zoom` (percent position of the detail inside the capture), `pair` (another
 screen id) and `chips` are optional and only read with `--vary`.
+
+**`--style strip`** reads a `strip:` block instead (add it next to `screens:`):
+
+```yaml
+strip:
+  hero: { title: "ITP English test practice", badges: ["165 questions", "Offline, no account"] }
+  screens:
+    home:     { top: "Full simulation", pill: "115 minutes" }   # 1st screen: the device shared with the hero
+    result:   { top: "Your score", pill: "by section" }
+    explain:  { top: "Mistakes", pill: "explained", fit: true }  # whole device: the point sits low on screen
+```
+
+`top` is the plain line (2-3 words), `pill` the keyword in the sticker (1-2 words) - together at most
+5 words, the keyword being the one the store visitor should remember. `\n` in `title` or `top` forces a
+line break (the hero title then shrinks until its longest line fits): use it for CJK and Thai, which
+otherwise break inside a word. Two badges, each at most ~20 characters. Use `fit: true` wherever the
+thing the caption names is in the lower third of the capture - the bleeding device crops it.
 
 A screen with no entry falls back to its `title:` from `screens.yml` and gets a warning in
 the report.
@@ -170,17 +199,27 @@ try {
           || c.top < -tol || c.bottom > innerHeight + tol || c.left < -tol || c.right > innerWidth + tol;
       })
       .map(el => el.getAttribute('data-check')));
-    const out = abs(job.out);
-    fs.mkdirSync(path.dirname(out), { recursive: true });
     const format = job.format ?? 'jpeg';
-    await page.screenshot({ path: out, type: format, ...(format === 'jpeg' ? { quality: job.quality ?? 95 } : {}) });
+    const opts = format === 'jpeg' ? { quality: job.quality ?? 95 } : {};
+    // "parts": one wide page cut into several images (strip.html), so a background or a device can
+    // run on from one screenshot into the next. Each part: { out, x, y?, width?, height? }.
+    const parts = job.parts ?? [{ out: job.out }];
+    for (const part of parts) {
+      const out = abs(part.out);
+      fs.mkdirSync(path.dirname(out), { recursive: true });
+      const clip = job.parts ? { x: part.x ?? 0, y: part.y ?? 0, width: part.width ?? 1080, height: part.height ?? job.height } : undefined;
+      await page.screenshot({ path: out, type: format, ...opts, ...(clip ? { clip } : {}) });
+      console.log(`${overflow.length ? 'OVERFLOW ' + overflow.join(',') + ' ' : ''}wrote ${part.out}`);
+    }
     await page.close();
-    console.log(`${overflow.length ? 'OVERFLOW ' + overflow.join(',') + ' ' : ''}wrote ${job.out}`);
   }
 } finally {
   await browser.close();
 }
 ```
+
+An existing copy without `job.parts` predates `--style strip`: replace its screenshot block with
+the `parts` loop above (the only edit made to an existing tool file).
 
 ### `docs/store/_tools/templates/phone.html`
 
@@ -308,6 +347,236 @@ The varied phone template (`--vary`, `--variants`). Same 1080x1920 canvas and va
 </body></html>
 ```
 
+### `docs/store/_tools/templates/strip.html`
+
+`--style strip`. One page `count x 1080` wide, laid out by its own script from the `panels` JSON;
+render.mjs cuts it with `parts`. Variables: `font`, `bg1`, `bg2`, `bg3`, `text`, `accent`, `frame`,
+`ring`, `pill`, `pillink`, `herostyle`, `lang`, `dir`, `cjk` (JP/KR/TC/SC: which Noto CJK face backs
+the display font), `panels`; images `shot0`…`shot7`, `icon`.
+
+```html
+<!doctype html>
+<!--
+  strip.html — the whole phone set as ONE canvas (count x 1080 by 1920), cut into 1080x1920
+  screenshots by render.mjs "parts". Because it is one page, the background runs on from image to
+  image and a device can straddle two images (the "span" look of the paid generators).
+
+  Panels come from the data-panels attribute (JSON, HTML-escaped by render.mjs):
+    [{ "kind": "hero",  "title": "...", "badges": ["165 questions", "Offline"], "icon": true },
+     { "kind": "span",  "top": "...", "pill": "...", "shot": "shot0" },      // device shared with the panel before
+     { "kind": "phone", "top": "...", "pill": "...", "shot": "shot1", "tilt": 0, "fit": false },
+     ...]
+  "top" is the plain line, "pill" the keyword in the white sticker. Images shot0..shot7 and icon are
+  hidden <img>s the script reads by id.
+-->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family={{font}}:ital,wght@0,800;0,900;1,900&display=swap" rel="stylesheet">
+<style>
+  :root { --w: 1080px; --h: 1920px; --bg1: {{bg1}}; --bg2: {{bg2}}; --bg3: {{bg3}}; --text: {{text}};
+          --accent: {{accent}}; --frame: {{frame}}; --ring: {{ring}}; --pill: {{pill}}; --pillink: {{pillink}}; }
+  html, body { margin: 0; height: var(--h); overflow: hidden; }
+  body { position: relative; color: var(--text);
+         font-family: "{{font}}", "Noto Sans Thai", "Noto Sans Arabic", "Noto Sans CJK {{cjk}}", system-ui, sans-serif;
+         /* one gradient across the whole strip: dark - bright - dark - bright ... */
+         background: linear-gradient(100deg, var(--bg1) 0%, var(--bg2) 22%, var(--bg3) 45%, var(--bg2) 70%, var(--bg1) 100%); }
+  img.src { display: none; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .30; pointer-events: none; }
+  .panel { position: absolute; top: 0; width: var(--w); height: var(--h); }
+
+  /* sticker caption: plain heavy line + keyword in a tilted white pill with a hard shadow */
+  .cap { position: absolute; top: 110px; left: 60px; right: 60px; height: 380px; z-index: 5; text-align: center;
+         display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 14px;
+         padding: 0 0 26px; box-sizing: border-box; }  /* room for the tilted pill's corners + shadow */
+  .cap .top { font-size: 96px; font-weight: 900; line-height: 1.02; letter-spacing: -2px; text-wrap: balance; white-space: pre-line;
+         text-shadow: 0 6px 24px rgba(0,0,0,.25); }
+  .cap .pill { display: inline-block; font-size: 92px; font-weight: 900; line-height: 1.1; letter-spacing: -2px;
+         background: var(--pill); color: var(--pillink); padding: 6px 44px 14px; border-radius: 999px;
+         transform: rotate(-3deg); box-shadow: 10px 12px 0 var(--accent); max-width: 920px; text-wrap: balance; }
+  .cap .pill:empty, .cap .top:empty { display: none; }
+
+  /* device: thin bright ring around a dark bezel */
+  .device { position: absolute; z-index: 3; background: var(--frame); border-radius: 104px; padding: 18px;
+         box-shadow: 0 0 0 7px var(--ring), 0 70px 140px rgba(0,0,0,.45); }
+  .device .screen { width: 100%; height: 100%; border-radius: 88px; overflow: hidden; background: #000; position: relative; }
+  .device img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .device .punch { position: absolute; top: 36px; left: 50%; width: 30px; height: 30px; margin-left: -15px;
+         border-radius: 50%; background: var(--frame); z-index: 2; }
+
+  /* hero: big left-aligned title, brand row, honest fact badges at the bottom-left */
+  .hero .brand { position: absolute; top: 120px; left: 80px; display: flex; align-items: center; gap: 26px;
+         font-size: 54px; font-weight: 900; letter-spacing: -1px; }
+  .hero .brand img { width: 120px; height: 120px; border-radius: 30px; box-shadow: 0 14px 36px rgba(0,0,0,.3); }
+  .hero .title { position: absolute; top: 300px; left: 80px; width: 560px; height: 820px; z-index: 5;
+         font-size: 112px; font-weight: 900; font-style: {{herostyle}}; line-height: .98; letter-spacing: -3px;
+         text-wrap: balance; text-shadow: 0 8px 30px rgba(0,0,0,.25); white-space: pre-line; }  /* \n in the title = line break */
+  .hero .badges { position: absolute; left: 60px; bottom: 120px; width: 600px; z-index: 5;
+         display: flex; flex-direction: column; gap: 34px; align-items: flex-start; }
+  .badge { display: flex; align-items: center; gap: 6px; }
+  .badge svg { width: 70px; height: 150px; flex: none; }
+  .badge svg.r { transform: scaleX(-1); }
+  .badge span { font-size: 50px; font-weight: 900; line-height: 1.05; text-align: center; max-width: 400px; }
+  [dir="rtl"] .hero .title, [dir="rtl"] .hero .badges, [dir="rtl"] .hero .brand { left: auto; right: 80px; }
+</style></head>
+<body lang="{{lang}}" dir="{{dir}}" data-panels="{{panels}}">
+  <img class="src" id="shot0" src="{{shot0}}"><img class="src" id="shot1" src="{{shot1}}">
+  <img class="src" id="shot2" src="{{shot2}}"><img class="src" id="shot3" src="{{shot3}}">
+  <img class="src" id="shot4" src="{{shot4}}"><img class="src" id="shot5" src="{{shot5}}">
+  <img class="src" id="shot6" src="{{shot6}}"><img class="src" id="shot7" src="{{shot7}}">
+  <img class="src" id="icon" src="{{icon}}">
+<script>
+  const W = 1080, H = 1920;
+  const panels = JSON.parse(document.body.dataset.panels);
+  document.body.style.width = (panels.length * W) + 'px';
+  const src = id => (document.getElementById(id) || {}).src || '';
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.textContent = html; return e; };
+  const laurel = r => `<svg class="${r ? 'r' : ''}" viewBox="0 0 70 150" fill="currentColor"><path d="M58 146C22 126 6 92 10 50" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>${
+    [[10,40,-30],[8,62,-20],[10,84,-10],[16,104,0],[26,122,12],[40,136,26]].map(([x,y,a]) => `<ellipse cx="${x+10}" cy="${y}" rx="8" ry="17" transform="rotate(${a} ${x+10} ${y})"/>`).join('')}</svg>`;
+
+  // soft light blobs sitting on the seams, so the strip reads as one surface
+  for (let i = 1; i < panels.length; i += 2) {
+    const b = el('div', 'blob');
+    Object.assign(b.style, { left: (i * W - 300) + 'px', top: (i % 4 === 1 ? 1150 : 250) + 'px', width: '600px', height: '600px', background: 'var(--accent)' });
+    document.body.appendChild(b);
+  }
+
+  const device = (left, top, width, rot, shot) => {
+    const d = el('div', 'device');
+    Object.assign(d.style, { left: left + 'px', top: top + 'px', width: width + 'px', height: Math.round(width * 2400 / 1080 * 0.985) + 'px', transform: `rotate(${rot}deg)` });
+    const s = el('div', 'screen'); s.appendChild(el('div', 'punch'));
+    const im = el('img'); im.src = src(shot); s.appendChild(im); d.appendChild(s);
+    document.body.appendChild(d);
+  };
+
+  // RTL stores show the carousel right-to-left: the hero is the rightmost image, so the strip is
+  // laid out mirrored (render parts are mapped the same way by strip_jobs.py).
+  const rtl = document.body.dir === 'rtl';
+  panels.forEach((p, i) => {
+    const x = (rtl ? panels.length - 1 - i : i) * W;
+    const panel = el('div', 'panel ' + p.kind); panel.style.left = x + 'px';
+    if (p.kind === 'hero') {
+      const brand = el('div', 'brand');
+      if (p.icon && src('icon')) { const ic = el('img'); ic.src = src('icon'); brand.appendChild(ic); }
+      brand.appendChild(el('span', '', p.name || ''));
+      panel.appendChild(brand);
+      const t = el('div', 'title', p.title); t.dataset.check = 'hero-title'; panel.appendChild(t);
+      // A title written with \n keeps its lines; the font shrinks until the longest line fits.
+      if (p.title.includes('\n')) t.style.whiteSpace = 'pre';
+      t._fit = true;
+      const bs = el('div', 'badges');
+      (p.badges || []).forEach(text => {
+        const b = el('div', 'badge'); b.innerHTML = laurel(false); const s = el('span', '', text); s.dataset.check = 'badge'; b.appendChild(s);
+        b.insertAdjacentHTML('beforeend', laurel(true)); bs.appendChild(b);
+      });
+      panel.appendChild(bs);
+    } else {
+      const cap = el('div', 'cap'); cap.dataset.check = 'caption-' + (i + 1);
+      cap.appendChild(el('div', 'top', p.top || '')); cap.appendChild(el('div', 'pill', p.pill || ''));
+      panel.appendChild(cap);
+      if (p.kind === 'span') {
+        // the device belongs to the previous (hero) panel's right half and this panel's left half
+        if (rtl) device(x + W - 460, 560, 820, 9, p.shot);
+        else device(x - 360, 560, 820, -9, p.shot);
+      } else {
+        // fit: the whole device on the canvas, for a screen whose point sits at the bottom of the capture
+        if (p.fit) device(x + 235, 560, 610, p.tilt || 0, p.shot);
+        else device(x + 130, 600, 820, p.tilt || 0, p.shot);
+      }
+    }
+    document.body.appendChild(panel);
+  });
+  // shrink-to-fit pass for hero titles (after layout, once fonts are in)
+  document.fonts.ready.then(() => document.querySelectorAll('.title').forEach(t => {
+    let size = parseFloat(getComputedStyle(t).fontSize);
+    const room = t.parentElement.querySelector('.badges').getBoundingClientRect().top - 40;
+    while (size > 64 && (t.scrollWidth > t.clientWidth + 2 || t.getBoundingClientRect().top + t.scrollHeight > room)) {
+      size -= 4; t.style.fontSize = size + 'px';
+    }
+  }));
+</script>
+</body></html>
+```
+
+### `docs/store/_tools/strip_jobs.py`
+
+Builds the strip job (one per locale) from `theme.yml`, `captions.<locale>.yml` and
+`raw/<locale>/index.json`. `STRIP_OUT=out-strip` writes somewhere other than `out/` for a trial run.
+
+```python
+#!/usr/bin/env python3
+"""Build the strip.html jobs (one wide canvas per locale, cut into 1080x1920 images).
+
+    python3 strip_jobs.py docs/store/<app> [locale ...] > docs/store/<app>/.jobs-strip.json
+
+Reads theme.yml (bg1/bg2/bg3, text, accent, frame, ring, pill, pillink, font, name, icon) and each
+captions.<locale>.yml `strip:` block:
+
+    strip:
+      hero: { title: "ITP English test practice", badges: ["165 questions", "Offline, no account"] }
+      screens:
+        home:   { top: "Full simulation", pill: "115 minutes" }   # first screen shares the hero's device
+        result: { top: "Your score", pill: "by section" }
+
+The first screen is drawn as a tilted device straddling the hero and panel 2; every other screen gets
+its own panel. Output: out/<locale>/NN-<id>.jpg, hero first.
+"""
+import json
+import os
+import sys
+
+import yaml
+
+OUT = os.environ.get("STRIP_OUT", "out")
+RTL = ("ar", "he", "fa", "ur")
+CJK = {"ja": "JP", "ko": "KR", "zh-TW": "TC", "zh": "SC"}
+
+
+def main(app_dir, locales):
+    theme = yaml.safe_load(open(os.path.join(app_dir, "theme.yml")))
+    if not locales:
+        locales = sorted(d for d in os.listdir(os.path.join(app_dir, "raw")) if os.path.exists(os.path.join(app_dir, "raw", d, "index.json")))
+    jobs = []
+    for loc in locales:
+        index = json.load(open(os.path.join(app_dir, "raw", loc, "index.json")))
+        cap = yaml.safe_load(open(os.path.join(app_dir, f"captions.{loc}.yml")))
+        strip = cap["strip"]
+        screens = index["screens"]
+        if len(screens) + 1 > 8:
+            sys.exit(f"{loc}: {len(screens)} screens + hero > 8 (Play's maximum)")
+        panels = [dict(kind="hero", name=theme.get("name", ""), icon=bool(theme.get("icon")), **strip["hero"])]
+        images = {"icon": theme["icon"]} if theme.get("icon") else {}
+        for i, s in enumerate(screens):
+            c = strip["screens"].get(s["id"])
+            if c is None:
+                sys.exit(f"{loc}: no strip caption for screen {s['id']}")
+            images[f"shot{i}"] = f"raw/{loc}/{s['file']}"
+            panels.append(dict(kind="span" if i == 0 else "phone", shot=f"shot{i}", **c))
+        names = ["00-hero"] + [os.path.splitext(s["file"])[0] for s in screens]
+        ext = "png" if theme.get("output") == "png" else "jpg"
+        jobs.append({
+            "template": "../_tools/templates/strip.html",
+            "width": 1080 * len(panels), "height": 1920,
+            "format": "png" if ext == "png" else "jpeg", "quality": 95,
+            # RTL: the strip is drawn mirrored (hero rightmost), so part k sits k panels from the right.
+            "parts": [{"out": f"{OUT}/{loc}/{n}.{ext}", "x": 1080 * ((len(names) - 1 - k) if loc in RTL else k)}
+                      for k, n in enumerate(names)],
+            "vars": {
+                "font": theme.get("strip_font", theme.get("font", "Inter")),
+                "bg1": theme["bg1"], "bg2": theme["bg2"], "bg3": theme.get("bg3", theme["bg2"]),
+                "text": theme.get("text", "#FFFFFF"), "accent": theme["accent"], "frame": theme.get("frame", "#0B0B0F"),
+                "ring": theme.get("ring", "rgba(255,255,255,.35)"), "pill": theme.get("pill", "#FFFFFF"),
+                "pillink": theme.get("pillink", "#111111"), "herostyle": theme.get("hero_style", "normal"),
+                "lang": loc, "dir": "rtl" if loc in RTL else "ltr", "cjk": CJK.get(loc, "JP"),
+                "panels": json.dumps(panels, ensure_ascii=False),
+            },
+            "images": images,
+        })
+    json.dump(jobs, sys.stdout, ensure_ascii=False, indent=1)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2:])
+```
+
 ### `docs/store/_tools/templates/contact.html`
 
 One sheet per variant set so the owner compares sets at a glance: 2160x2040, up to eight
@@ -426,8 +695,13 @@ width: 1000px; font-size: 96px; text-align: left`.
 2. Feature graphic (unless `--screen` limits the run): `feature.html`, 1024x500,
    `out/<locale>/featureGraphic.<ext>`, `shot` = the first screen's capture, `tagline` from
    the captions file (fallback `theme.yml`).
-3. `--dry-run`: stop here and print the job file path.
-4. Run from the project root: `node docs/store/_tools/render.mjs docs/store/<app>/.jobs.json`.
+3. **`--style strip`**: skip 1 and run
+   `python3 -I docs/store/_tools/strip_jobs.py docs/store/<app> [locales] > docs/store/<app>/.jobs-strip.json`
+   (needs PyYAML); output `out/<locale>/00-hero.jpg`, then `01-…` per capture. Look at every hero:
+   the title must stay clear of the tilted device and the badges. The feature graphic is unchanged
+   (step 2, in the regular job file).
+4. `--dry-run`: stop here and print the job file path.
+5. Run from the project root: `node docs/store/_tools/render.mjs docs/store/<app>/.jobs.json`.
    Any line starting with `OVERFLOW` names a text block that didn't fit: shorten that
    caption (or add a `<br>`-free shorter wording) and re-render that job.
 
